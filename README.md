@@ -31,3 +31,7 @@ plugin allows you to access your Switch-Bot Device(s) from HomeKit.
 <img src="" width="1px">
 
 </p>
+
+## Switch-Bot API
+
+- [OpenWonderLabs/SwitchBotAPI](https://github.com/OpenWonderLabs/SwitchBotAPI)
