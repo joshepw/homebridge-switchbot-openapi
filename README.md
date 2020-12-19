@@ -23,6 +23,6 @@ plugin allows you to access your Switch-Bot Device(s) from HomeKit.
 
 <p align="center">
 
-<img src="" width="600px">
+<img src="" width="1px">
 
 </p>
