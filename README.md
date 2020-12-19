@@ -4,8 +4,8 @@
 
 # Homebridge Switch-Bot
 
-<a href="https://www.npmjs.com/package/homebridge-switch-bot"><img title="npm version" src="https://badgen.net/npm/v/homebridge-switch-bot" ></a>
-<a href="https://www.npmjs.com/package/homebridge-switch-bot"><img title="npm downloads" src="https://badgen.net/npm/dt/homebridge-switch-bot" ></a>
+<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm version" src="https://badgen.net/npm/v/@donavanbecker/homebridge-switch-bot" ></a>
+<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm downloads" src="https://badgen.net/npm/dt/@donavanbecker/homebridge-switch-bot" ></a>
 
 <p>The Homebridge <a href="https://www.switch-bot.com">Switch-Bot</a> 
 plugin allows you to access your Switch-Bot Device(s) from HomeKit.
