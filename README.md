@@ -1,6 +1,6 @@
 <span align="center">
 
-<a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://raw.githubusercontent.com/donavanbecker/homebridge-switch-bot/master/switchbot/Homebridge_x_SwitchBot.svg?sanitize=true" width="500px"></a>
+<a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://raw.githubusercontent.com/donavanbecker/homebridge-switch-bot/main/switchbot/Homebridge_x_SwitchBot.svg?sanitize=true" width="500px"></a>
 
 # Homebridge Switch-Bot
 
