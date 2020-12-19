@@ -96,7 +96,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (!this.config.options.ttl) {
       this.config.options!.ttl! = 300;
-      this.log.info('TTL not provided, using default TTL.');
+      this.log.warn('TTL not provided, using default TTL.');
     }
 
     if (!this.config.credentials) {
