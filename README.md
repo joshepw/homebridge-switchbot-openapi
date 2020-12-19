@@ -21,6 +21,11 @@ plugin allows you to access your Switch-Bot Device(s) from HomeKit.
 
 ## Configuration
 
+1. Download SwitchBot App on App Store or Google Play Store.
+2. Register a SwitchBot account and log in into your account.
+3. Generate an Open Token within the App.
+4. Input your Open Token into the Config <span style="color:red">*Open Token*</span> paramter.
+
 <p align="center">
 
 <img src="" width="1px">

@@ -16,8 +16,8 @@
       "credentials": {
         "type": "object",
         "properties": {
-          "token": {
-            "title": "Refresh Token",
+          "openToken": {
+            "title": "Open Token",
             "type": "string",
             "required": true
           },
@@ -55,7 +55,7 @@
       "expanded": false,
       "items": [
         "name",
-        "credentials.token"
+        "credentials.openToken"
       ]
     },
     {
