@@ -32,6 +32,13 @@
       "options": {
         "type": "object",
         "properties": {
+          "ttl": {
+            "title": "TTL",
+            "type": "number",
+            "minimum": 300,
+            "placeholder": 300,
+            "description": "Indicates the number of seconds between polls of the Honeywell Home service."
+          },
           "humidifier": {
             "title": "humidifier",
             "type": "object",
@@ -73,6 +80,14 @@
             {
               "type": "help",
               "helpvalue": "<h5>Humidifier</h5><em class='primary-text'>Allows you to hide your Humidifier(s).</em>"
+            },
+            {
+              "type": "help",
+              "helpvalue": "<h5>TTL</h5><em class='primary-text'>TTL indicates the number of seconds between polls of SwitchBot API.</em>"
+            },
+            {
+              "key": "options.ttl",
+              "notitle": true
             },
             "options.humidifier.hide"
           ]
