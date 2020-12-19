@@ -1,7 +1,5 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, Service, Characteristic } from 'homebridge';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import * as qs from 'querystring';
-import { readFileSync, writeFileSync } from 'fs';
 import { PLATFORM_NAME, PLUGIN_NAME, AuthURL, DeviceURL } from './settings';
 import { Humidifier } from './Devices/Humidifier';
 import {
@@ -48,10 +46,9 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     // setup axios interceptor to add headers / api key to each request
     this.axios.interceptors.request.use((request: AxiosRequestConfig) => {
-      request.headers.Authorization = `Bearer ${this.config.credentials ?.accessToken}`;
+      request.headers.Authorization = this.config.credentials ?.openToken;
       request.params = request.params || {};
-      request.params.apikey = this.config.credentials ?.consumerKey;
-      request.headers['Content-Type'] = 'application/json';
+      request.headers['Content-Type'] = 'application/json; charset=utf8';
       return request;
     });
 
@@ -62,7 +59,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.api.on('didFinishLaunching', async () => {
       log.debug('Executed didFinishLaunching callback');
       // run the method to discover / register your devices as accessories
-      await this.refreshAccessToken();
       try {
         this.discoverDevices();
       } catch (e) {
@@ -96,21 +92,15 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.config.options = this.config.options || {};
 
     if (this.config.options) {
-      this.config.options.ttl = this.config.options!.ttl || 300; // default 300 seconds
+      this.config.options ?.humidifier;
     }
 
-    if (!this.config.credentials ?.consumerSecret && this.config.options!.ttl! < 300) {
-      this.log.debug('TTL must be set to 300 or higher unless you setup your own consumerSecret.');
-      this.config.options!.ttl! = 300;
-    }
+    this.config.options!.ttl! = 300;
 
     if (!this.config.credentials) {
       throw new Error('Missing Credentials');
     }
-    if (!this.config.credentials.consumerKey) {
-      throw new Error('Missing consumerKey');
-    }
-    if (!this.config.credentials.refreshToken) {
+    if (!this.config.credentials.openToken) {
       throw new Error('Missing refreshToken');
     }
   }
@@ -130,87 +120,29 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     try {
       let result;
 
-      if (this.config.credentials!.consumerSecret) {
+      if (this.config.credentials!.openToken) {
         // this.log.debug('Logging into honeywell', new Error());
         result = (
           await axios({
             url: AuthURL,
             method: 'POST',
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Type': 'application/json; charset=utf8',
             },
             auth: {
-              username: this.config.credentials!.consumerKey,
-              password: this.config.credentials!.consumerSecret,
+              openToken: this.config.credentials!.openToken,
             },
-            data: qs.stringify({
-              grant_type: 'refresh_token',
-              refresh_token: this.config.credentials!.refreshToken,
-            }),
             responseType: 'json',
           })
         ).data;
       }
-
-      this.config.credentials!.accessToken = result.access_token;
-      this.log.warn('Got access token:', this.config.credentials!.accessToken);
-
-      // check if the refresh token has changed
-      if (result.refresh_token !== this.config.credentials!.refreshToken) {
-        this.log.warn('New refresh token:', result.refresh_token);
-        await this.updateRefreshToken(result.refresh_token);
-      }
-
-      this.config.credentials!.refreshToken = result.refresh_token;
+      this.config.credentials!.openToken = result.refresh_token;
+      
     } catch (e) {
       this.log.error('Failed to refresh access token.', JSON.stringify(e.message));
       this.log.debug(JSON.stringify(e));
     }
-  }
-
-  /**
-   * The refresh token will periodically change.
-   * This method saves the updated refresh token in the config.json file
-   * @param newRefreshToken
-   */
-  async updateRefreshToken(newRefreshToken: string) {
-    try {
-      // check the new token was provided
-      if (!newRefreshToken) {
-        throw new Error('New token not provided');
-      }
-
-      // load in the current config
-      const currentConfig = JSON.parse(readFileSync(this.api.user.configPath(), 'utf8'));
-
-      // check the platforms section is an array before we do array things on it
-      if (!Array.isArray(currentConfig.platforms)) {
-        throw new Error('Cannot find platforms array in config');
-      }
-
-      // find this plugins current config
-      const pluginConfig = currentConfig.platforms.find((x: { platform: string }) => x.platform === PLATFORM_NAME);
-
-      if (!pluginConfig) {
-        throw new Error(`Cannot find config for ${PLATFORM_NAME} in platforms array`);
-      }
-
-      // check the .credentials is an object before doing object things with it
-      if (typeof pluginConfig.credentials !== 'object') {
-        throw new Error('pluginConfig.credentials is not an object');
-      }
-
-      // set the refresh token
-      pluginConfig.credentials.refreshToken = newRefreshToken;
-
-      // save the config, ensuring we maintain pretty json
-      writeFileSync(this.api.user.configPath(), JSON.stringify(currentConfig, null, 4));
-
-      this.log.warn('Homebridge config.json has been updated with new refresh token.');
-    } catch (e) {
-      this.log.error('Failed to update refresh token in config:', JSON.stringify(e.message));
-      this.log.debug(JSON.stringify(e));
-    }
+    
   }
 
   /**

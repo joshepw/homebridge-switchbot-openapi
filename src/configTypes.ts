@@ -9,18 +9,12 @@ export interface SwitchBotPlatformConfig extends PlatformConfig {
 }
 
 export type credentials = {
-  accessToken?: any;
-  consumerKey?: any;
-  consumerSecret?: any;
-  refreshToken?: any;
+  openToken?: any;
 };
 
 export type options = {
   ttl?: number;
-  thermostat?: string;
-  leaksensor?: string;
-  roomsensor?: string;
-  roompriority?: string;
+  humidifier?: string;
 };
 
 export interface AxiosRequestConfig {
