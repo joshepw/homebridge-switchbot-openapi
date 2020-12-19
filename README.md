@@ -4,8 +4,8 @@
 
 # Homebridge Switch-Bot
 
-<a href="https://www.npmjs.com/package/homebridge-switch-bot"><img title="npm version" src="https://badgen.net/npm/v/homebridge-switch-bot" ></a>
-<a href="https://www.npmjs.com/package/homebridge-switch-bot"><img title="npm downloads" src="https://badgen.net/npm/dt/homebridge-switch-bot" ></a>
+<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm version" src="https://badgen.net/npm/v/@donavanbecker/homebridge-switch-bot" ></a>
+<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm downloads" src="https://badgen.net/npm/dt/@donavanbecker/homebridge-switch-bot" ></a>
 
 <p>The Homebridge <a href="https://www.switch-bot.com">Switch-Bot</a> 
 plugin allows you to access your Switch-Bot Device(s) from HomeKit.
@@ -21,8 +21,17 @@ plugin allows you to access your Switch-Bot Device(s) from HomeKit.
 
 ## Configuration
 
+1. Download SwitchBot App on App Store or Google Play Store.
+2. Register a SwitchBot account and log in into your account.
+3. Generate an Open Token within the App.
+4. Input your Open Token into the Config <span style="color:red">*Open Token*</span> paramter.
+
 <p align="center">
 
 <img src="" width="1px">
 
 </p>
+
+## Switch-Bot API
+
+- [OpenWonderLabs/SwitchBotAPI](https://github.com/OpenWonderLabs/SwitchBotAPI)
