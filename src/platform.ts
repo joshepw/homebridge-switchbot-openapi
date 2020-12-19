@@ -1,6 +1,6 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, Service, Characteristic } from 'homebridge';
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
-import { PLATFORM_NAME, PLUGIN_NAME, AuthURL, DeviceURL } from './settings';
+import { PLATFORM_NAME, PLUGIN_NAME, DeviceURL } from './settings';
 import { Humidifier } from './Devices/Humidifier';
 import {
   irdevices,
@@ -47,7 +47,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     // setup axios interceptor to add headers / api key to each request
     this.axios.interceptors.request.use((request: AxiosRequestConfig) => {
       request.headers.Authorization = this.config.credentials ?.openToken;
-      request.params = request.params || {};
       request.headers['Content-Type'] = 'application/json; charset=utf8';
       return request;
     });
@@ -105,46 +104,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     }
   }
 
-  async refreshAccessToken() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-    this.refreshInterval = setInterval(() => this.getAccessToken(), (1800 / 3) * 1000);
-    await this.getAccessToken();
-  }
-
-  /**
-   * Exchange the refresh token for an access token
-   */
-  async getAccessToken() {
-    try {
-      let result;
-
-      if (this.config.credentials!.openToken) {
-        // this.log.debug('Logging into honeywell', new Error());
-        result = (
-          await axios({
-            url: AuthURL,
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json; charset=utf8',
-            },
-            auth: {
-              openToken: this.config.credentials!.openToken,
-            },
-            responseType: 'json',
-          })
-        ).data;
-      }
-      this.config.credentials!.openToken = result.refresh_token;
-      
-    } catch (e) {
-      this.log.error('Failed to refresh access token.', JSON.stringify(e.message));
-      this.log.debug(JSON.stringify(e));
-    }
-    
-  }
-
   /**
    * this method discovers the Locations
    */
@@ -153,9 +112,8 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     for (const device of devices.body.deviceList) {
       this.log.info(`Total Devices Found: ${device.length}`);
       this.log.debug(JSON.stringify(device));
-      if (device.deviceModel.startsWith('D6')) {
+      if (device.deviceType.startsWith('Humidifier')) {
         // this.deviceinfo(device);
-        // this.log.debug(JSON.stringify(device));
         this.log.info('Discovered %s %s - %s', device.deviceType, device.deviceModel, device.userDefinedDeviceName);
         this.createHumidifier(device, devices);
       } else if (!device.DeviceModel) {

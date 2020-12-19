@@ -153,7 +153,6 @@ export class Humidifier {
         } catch (e) {
           this.platform.log.error(JSON.stringify(e.message));
           this.platform.log.debug('Humidifier %s -', this.accessory.displayName, JSON.stringify(e));
-          this.platform.refreshAccessToken();
         }
         this.humidifierUpdateInProgress = false;
       });
@@ -195,7 +194,6 @@ export class Humidifier {
         JSON.stringify(e.message),
         this.platform.log.debug('Humidifier %s -', this.accessory.displayName, JSON.stringify(e)),
       );
-      this.platform.refreshAccessToken();
     }
   }
 
