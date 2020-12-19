@@ -60,10 +60,7 @@
       "title": "Switch-Bot Account Info",
       "expandable": true,
       "expanded": false,
-      "items": [
-        "name",
-        "credentials.openToken"
-      ]
+      "items": ["name", "credentials.openToken"]
     },
     {
       "type": "fieldset",
@@ -71,6 +68,14 @@
       "expandable": true,
       "expanded": false,
       "items": [
+        {
+          "type": "help",
+          "helpvalue": "<h5>TTL</h5><em class='primary-text'>TTL indicates the number of seconds between polls of SwitchBot API.</em>"
+        },
+        {
+          "key": "options.ttl",
+          "notitle": true
+        },
         {
           "type": "fieldset",
           "title": "Humidifier Options",
@@ -80,14 +85,6 @@
             {
               "type": "help",
               "helpvalue": "<h5>Humidifier</h5><em class='primary-text'>Allows you to hide your Humidifier(s).</em>"
-            },
-            {
-              "type": "help",
-              "helpvalue": "<h5>TTL</h5><em class='primary-text'>TTL indicates the number of seconds between polls of SwitchBot API.</em>"
-            },
-            {
-              "key": "options.ttl",
-              "notitle": true
             },
             "options.humidifier.hide"
           ]
