@@ -1,0 +1,64 @@
+{
+  "pluginAlias": "Switch-Bot",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "<p align='center'><img width='250px' src='https://user-images.githubusercontent.com/9875439/102667214-7cae8a00-414e-11eb-8f42-bb5225598209.png'></p>\n\nThe **SwitchBot** plugin allows you to control SwitchBot Devices. \n\nTo get started link your SwtichBot account.",
+  "footerDisplay": "Please raise any issues on our [project page](https://github.com/donavanbecker/homebridge-switch-bot/issues).\n\nIf you would like to have other Switch-Bot Devices added to this plugin fill out [Feature Request Form](https://github.com/donavanbecker/homebridge-switch-bot/issues/new?assignees=&labels=&template=feature_request.md).",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "title": "Name",
+        "default": "Switch-Bot",
+        "required": true
+      },
+      "credentials": {
+        "type": "object",
+        "properties": {
+          "consumerKey": {
+            "title": "Consumer Key",
+            "type": "string",
+            "required": true
+          },
+          "consumerSecret": {
+            "title": "Consumer Secret",
+            "type": "string"
+          },
+          "refreshToken": {
+            "title": "Refresh Token",
+            "type": "string",
+            "required": true
+          },
+          "notice": {
+            "title": "Notice",
+            "type": "string",
+            "required": true,
+            "default": "Keep your tokens a secret!"
+          }
+        }
+      },
+      "options": {
+        "type": "object",
+        "properties": {
+          "humidifier": {
+            "title": "humidifier",
+            "type": "object",
+            "properties": {
+              "hide": {
+                "title": "Hide humidifier(s)",
+                "type": "boolean",
+                "requried": false
+              },
+              "hide_fan": {
+                "title": "Hide humidifier(s) Fan",
+                "type": "boolean",
+                "requried": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
