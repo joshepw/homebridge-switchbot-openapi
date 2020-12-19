@@ -94,13 +94,16 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       this.config.options ?.humidifier;
     }
 
-    this.config.options!.ttl! = 300;
+    if (!this.config.options.ttl) {
+      this.config.options!.ttl! = 300;
+      this.log.info('TTL not provided, using default TTL.');
+    }
 
     if (!this.config.credentials) {
       throw new Error('Missing Credentials');
     }
     if (!this.config.credentials.openToken) {
-      throw new Error('Missing refreshToken');
+      throw new Error('Missing openToken');
     }
   }
 
