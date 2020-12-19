@@ -16,16 +16,7 @@
       "credentials": {
         "type": "object",
         "properties": {
-          "consumerKey": {
-            "title": "Consumer Key",
-            "type": "string",
-            "required": true
-          },
-          "consumerSecret": {
-            "title": "Consumer Secret",
-            "type": "string"
-          },
-          "refreshToken": {
+          "token": {
             "title": "Refresh Token",
             "type": "string",
             "required": true
@@ -34,7 +25,7 @@
             "title": "Notice",
             "type": "string",
             "required": true,
-            "default": "Keep your tokens a secret!"
+            "default": "Keep your token a secret!"
           }
         }
       },
@@ -49,16 +40,44 @@
                 "title": "Hide humidifier(s)",
                 "type": "boolean",
                 "requried": false
-              },
-              "hide_fan": {
-                "title": "Hide humidifier(s) Fan",
-                "type": "boolean",
-                "requried": false
               }
             }
           }
         }
       }
     }
-  }
+  },
+  "layout": [
+    {
+      "type": "fieldset",
+      "title": "Switch-Bot Account Info",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "name",
+        "credentials.token"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "title": "Advanced Settings",
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        {
+          "type": "fieldset",
+          "title": "Humidifier Options",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            {
+              "type": "help",
+              "helpvalue": "<h5>Humidifier</h5><em class='primary-text'>Allows you to hide your Humidifier(s).</em>"
+            },
+            "options.humidifier.hide"
+          ]
+        }
+      ]
+    }
+  ]
 }
