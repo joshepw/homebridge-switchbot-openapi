@@ -1,6 +1,6 @@
 {
   "displayName": "Homebridge SwitchBot",
-  "name": "@donavanbecker/homebridge-switch-bot",
+  "name": "homebridge-switchbot-openapi",
   "version": "0.1.0",
   "description": "The [Homebridge](https://homebridge.io) Switch-Bot plugin allows you to access your [SwitchBot](https://www.switch-bot.com) devices from HomeKit.",
   "author": "donavanbecker",

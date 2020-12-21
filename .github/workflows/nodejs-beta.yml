@@ -25,7 +25,7 @@ jobs:
           CI: true
 
   publish-npm:
-    if: github.repository == 'donavanbecker/homebridge-switch-bot'
+    if: github.repository == 'OpenWonderLabs/homebridge-switchbot-openapi'
 
     needs: build
 
