@@ -1,14 +1,14 @@
 <span align="center">
 
-<a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://raw.githubusercontent.com/donavanbecker/homebridge-switch-bot/main/switchbot/Homebridge_x_SwitchBot.svg?sanitize=true" width="500px"></a>
+<a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://raw.githubusercontent.com/OpenWonderLabs/homebridge-switchbot-openapi/main/switchbot/Homebridge_x_SwitchBot.svg?sanitize=true" width="500px"></a>
 
-# Homebridge Switch-Bot
+# Homebridge SwitchBot
 
-<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm version" src="https://badgen.net/npm/v/@donavanbecker/homebridge-switch-bot" ></a>
-<a href="https://www.npmjs.com/package/@donavanbecker/homebridge-switch-bot"><img title="npm downloads" src="https://badgen.net/npm/dt/@donavanbecker/homebridge-switch-bot" ></a>
+<a href="https://www.npmjs.com/package/homebridge-switchbot-openapi"><img title="npm version" src="https://badgen.net/npm/v/homebridge-switchbot-openapi" ></a>
+<a href="https://www.npmjs.com/package/homebridge-switchbot-openapi"><img title="npm downloads" src="https://badgen.net/npm/dt/homebridge-switchbot-openapi" ></a>
 
-<p>The Homebridge <a href="https://www.switch-bot.com">Switch-Bot</a> 
-plugin allows you to access your Switch-Bot Device(s) from HomeKit.
+<p>The Homebridge <a href="https://www.switch-bot.com">SwitchBot</a> 
+plugin allows you to access your SwitchBot Device(s) from HomeKit.
   <a href="https://homebridge.io">Homebridge</a>. 
 </p>
 
@@ -32,6 +32,10 @@ plugin allows you to access your Switch-Bot Device(s) from HomeKit.
 
 </p>
 
-## Switch-Bot API
+## Supported Devices
+
+- [SwitchBot Humidifiers](https://www.switch-bot.com/products/switchbot-smart-humidifier).
+
+## SwitchBotAPI
 
 - [OpenWonderLabs/SwitchBotAPI](https://github.com/OpenWonderLabs/SwitchBotAPI)
