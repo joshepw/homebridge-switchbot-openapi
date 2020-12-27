@@ -84,11 +84,14 @@ export class Curtain {
         this.refreshStatus();
       });
 
-    // Start an update interval
+    // update slide progress
     interval(1000)
       .pipe(skipWhile(() => this.curtainUpdateInProgress))
       .subscribe(() => {
-        this.platform.log.debug('Refresh status when moving', this.PositionState);
+        if (this.PositionState === this.platform.Characteristic.PositionState.STOPPED) {
+          return;
+        }
+        this.platform.log.debug(`Refresh status when moving`, this.PositionState);
         this.refreshStatus();
       });
 
