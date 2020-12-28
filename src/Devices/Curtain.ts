@@ -45,7 +45,7 @@ export class Curtain {
     (this.service =
       this.accessory.getService(this.platform.Service.WindowCovering) ||
       this.accessory.addService(this.platform.Service.WindowCovering)),
-    `${this.device.deviceName} ${this.device.deviceType}`;
+      `${this.device.deviceName} ${this.device.deviceType}`;
 
     // To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
     // when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
@@ -119,33 +119,31 @@ export class Curtain {
     // CurrentPosition
     this.CurrentPosition = 100 - this.deviceStatus.body.slidePosition;
     this.platform.log.debug(
-      'Humidifier %s CurrentPosition -',
+      'Curtain %s CurrentPosition -',
       this.accessory.displayName,
       'Device is Currently: ',
       this.CurrentPosition,
     );
 
     // PositionState
-    if (this.deviceStatus.body.moving) {
-      if (this.TargetPosition > this.CurrentPosition) {
-        this.platform.log.debug(
-          'Curtain %s -',
-          this.accessory.displayName,
-          'Current position:',
-          this.CurrentPosition,
-          'closing',
-        );
-        this.PositionState = this.platform.Characteristic.PositionState.INCREASING;
-      } else {
-        this.platform.log.debug(
-          'Curtain %s -',
-          this.accessory.displayName,
-          'Current position:',
-          this.CurrentPosition,
-          'opening',
-        );
-        this.PositionState = this.platform.Characteristic.PositionState.DECREASING;
-      }
+    if (this.TargetPosition > this.CurrentPosition) {
+      this.platform.log.debug(
+        'Curtain %s -',
+        this.accessory.displayName,
+        'Current position:',
+        this.CurrentPosition,
+        'closing',
+      );
+      this.PositionState = this.platform.Characteristic.PositionState.INCREASING;
+    } else if (this.TargetPosition < this.CurrentPosition) {
+      this.platform.log.debug(
+        'Curtain %s -',
+        this.accessory.displayName,
+        'Current position:',
+        this.CurrentPosition,
+        'opening',
+      );
+      this.PositionState = this.platform.Characteristic.PositionState.DECREASING;
     } else {
       this.platform.log.debug(
         'Curtain %s -',
@@ -231,8 +229,10 @@ export class Curtain {
 
     if (value > this.CurrentPosition) {
       this.PositionState = this.platform.Characteristic.PositionState.INCREASING;
-    } else {
+    } else if (value < this.CurrentPosition) {
       this.PositionState = this.platform.Characteristic.PositionState.DECREASING;
+    } else {
+      this.PositionState = this.platform.Characteristic.PositionState.STOPPED;
     }
     this.service.setCharacteristic(this.platform.Characteristic.PositionState, this.PositionState);
 
