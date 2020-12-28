@@ -109,35 +109,41 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
    * this method discovers the Locations
    */
   async discoverDevices() {
-    const devices = (await this.axios.get(DeviceURL)).data;
-    if (this.config.devicediscovery) {
-      this.deviceListInfo(devices);
-    } else {
-      this.log.debug(JSON.stringify(devices));
-    }
-    this.log.info(`Total Devices Found: ${devices.body.deviceList.length}`);
-    for (const device of devices.body.deviceList) {
+    try {
+      const devices = (await this.axios.get(DeviceURL)).data;
+  
       if (this.config.devicediscovery) {
-        this.deviceInfo(device);
+        this.deviceListInfo(devices);
       } else {
-        this.log.debug(JSON.stringify(device));
+        this.log.debug(JSON.stringify(devices));
       }
-      // For Future Devices
-      switch (device.deviceType) {
-        case 'Humidifier':
-          this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
-          this.createHumidifier(device, devices);
-          break;
-        case 'Curtain':
-          this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
-          this.createCurtain(device, devices);
-          break;
-        default:
-          this.log.info(
-            `A SwitchBot Device has been discovered with Device Type: ${device.deviceType}, which is currently not supported.`,
-            'Submit Feature Requests Here: https://git.io/JL14Z',
-          );
+      this.log.info(`Total Devices Found: ${devices.body.deviceList.length}`);
+      for (const device of devices.body.deviceList) {
+        if (this.config.devicediscovery) {
+          this.deviceInfo(device);
+        } else {
+          this.log.debug(JSON.stringify(device));
+        }
+        // For Future Devices
+        switch (device.deviceType) {
+          case 'Humidifier':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createHumidifier(device, devices);
+            break;
+          case 'Curtain':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createCurtain(device, devices);
+            break;
+          default:
+            this.log.info(
+              `A SwitchBot Device has been discovered with Device Type: ${device.deviceType}, which is currently not supported.`,
+              'Submit Feature Requests Here: https://git.io/JL14Z',
+            );
+        }
       }
+    } catch (e) {
+      this.log.error('Failed to Discover Devices.', JSON.stringify(e.message));
+      this.log.debug(JSON.stringify(e));
     }
   }
 
