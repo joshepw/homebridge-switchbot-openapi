@@ -69,8 +69,8 @@ export class Curtain {
     this.service
       .getCharacteristic(this.platform.Characteristic.TargetPosition)
       .setProps({
-        minValue: 0,
-        maxValue: 100,
+        minValue: this.platform.config.options?.curtain?.set_min || 0,
+        maxValue: this.platform.config.options?.curtain?.set_max || 100,
       })
       .on('set', this.handleTargetPositionSet.bind(this));
 

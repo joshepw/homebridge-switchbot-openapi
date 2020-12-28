@@ -14,7 +14,19 @@ export type credentials = {
 
 export type options = {
   ttl?: number;
-  humidifier?: string;
+  humidifier?: humidifier;
+  curtain?: curtain;
+};
+
+export type humidifier = {
+  hide?: number;
+  hide_tempeture?: boolean;
+};
+
+export type curtain = {
+  hide?: number;
+  set_max?: number;
+  set_min?: number;
 };
 
 export interface AxiosRequestConfig {

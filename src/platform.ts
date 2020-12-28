@@ -85,9 +85,22 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.config.options = this.config.options || {};
 
     if (this.config.options) {
-      this.config.options?.humidifier;
+      // Humidifier Config
+      if (this.config.options ?.humidifier) {
+        this.config.options.humidifier.hide;
+        this.config.options.humidifier.hide_tempeture;
+      }
+
+      // Curtain Config
+      if (this.config.options ?.curtain) {
+        this.config.options.curtain.hide;
+        this.config.options.curtain.set_min;
+        this.config.options.curtain.set_max;
+      }
     }
 
+
+    
     if (this.config.options!.ttl! < 120) {
       throw new Error('TTL must be above 120 (2 minutes).');
     }
@@ -158,7 +171,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       // the accessory already exists
-      if (devices.statusCode === 100) {
+      if (!this.config.options ?.humidifier ?.hide && devices.statusCode === 100) {
         this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
@@ -173,7 +186,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       } else {
         this.unregisterPlatformAccessories(existingAccessory);
       }
-    } else {
+    } else if (this.config.options ?.humidifier ?.hide) {
       // the accessory does not yet exist, so we need to create it
       this.log.info('Adding new accessory:', `${device.deviceName} ${device.deviceType}`);
       this.log.debug(`Registering new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
@@ -196,6 +209,8 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       // link the accessory to your platform
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       this.accessories.push(accessory);
+    } else {
+      this.log.debug(`Unable to Register new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
     }
   }
 
@@ -210,7 +225,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       // the accessory already exists
-      if (devices.statusCode === 100) {
+      if (!this.config.options ?.curtain ?.hide && devices.statusCode === 100) {
         this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
@@ -225,7 +240,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       } else {
         this.unregisterPlatformAccessories(existingAccessory);
       }
-    } else {
+    } else if (this.config.options ?.curtain ?.hide) {
       // the accessory does not yet exist, so we need to create it
       this.log.info('Adding new accessory:', `${device.deviceName} ${device.deviceType}`);
       this.log.debug(`Registering new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
@@ -248,6 +263,8 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       // link the accessory to your platform
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       this.accessories.push(accessory);
+    } else {
+      this.log.debug(`Unable to Register new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
     }
   }
 

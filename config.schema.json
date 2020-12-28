@@ -38,6 +38,38 @@
             "minimum": 120,
             "placeholder": 120,
             "description": "Indicates the number of seconds between polls of SwitchBot API."
+          },
+          "humidifier": {
+            "type": "object",
+            "properties": {
+              "hide": {
+                "title": "Hide Humidifiers",
+                "type": "boolean"
+              },
+              "hide_temperature": {
+                "title": "Hide Humidifier's Temperature Sensor",
+                "type": "boolean"
+              }
+            }
+          },
+          "curtain": {
+            "type": "object",
+            "properties": {
+              "hide": {
+                "title": "Hide Curtain",
+                "type": "boolean"
+              },
+              "set_min": {
+                "title": "Set Min",
+                "type": "number",
+                "placeholder": "0"
+              },
+              "set_max": {
+                "title": "Set Max",
+                "type": "number",
+                "placeholder": "100"
+              }
+            }
           }
         }
       }
@@ -67,6 +99,27 @@
         {
           "key": "options.ttl",
           "notitle": true
+        },
+        {
+          "type": "fieldset",
+          "title": "Humidifier Settings",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "options.humidifier.hide",
+            "options.humidifier.hide_temperature"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Curtain Settings",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "options.curtain.hide",
+            "options.curtain.set_min",
+            "options.curtain.set_max"
+          ]
         }
       ]
     }
