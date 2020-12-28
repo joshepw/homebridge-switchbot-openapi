@@ -45,7 +45,7 @@ export class Curtain {
     (this.service =
       this.accessory.getService(this.platform.Service.WindowCovering) ||
       this.accessory.addService(this.platform.Service.WindowCovering)),
-      `${this.device.deviceName} ${this.device.deviceType}`;
+    `${this.device.deviceName} ${this.device.deviceType}`;
 
     // To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
     // when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
@@ -91,7 +91,7 @@ export class Curtain {
         if (this.PositionState === this.platform.Characteristic.PositionState.STOPPED) {
           return;
         }
-        this.platform.log.debug(`Refresh status when moving`, this.PositionState);
+        this.platform.log.debug('Refresh status when moving', this.PositionState);
         this.refreshStatus();
       });
 

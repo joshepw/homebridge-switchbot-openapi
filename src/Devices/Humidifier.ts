@@ -302,29 +302,34 @@ export class Humidifier {
    * Pushes the requested changes to the SwitchBot API
    */
   async pushAutoChanges() {
-    if (
-      this.TargetHumidifierDehumidifierState ===
+    try {
+      if (
+        this.TargetHumidifierDehumidifierState ===
         this.platform.Characteristic.TargetHumidifierDehumidifierState.HUMIDIFIER_OR_DEHUMIDIFIER &&
       this.Active === this.platform.Characteristic.Active.ACTIVE
-    ) {
-      this.platform.log.debug('Pushing Auto!');
-      const payload = {
-        commandType: 'command',
-        command: 'setMode',
-        parameter: 'auto',
-      } as any;
+      ) {
+        this.platform.log.debug('Pushing Auto!');
+        const payload = {
+          commandType: 'command',
+          command: 'setMode',
+          parameter: 'auto',
+        } as any;
 
-      this.platform.log.info(
-        'Sending request to SwitchBot API. command:',
-        `${payload.command}, parameter:`,
-        `${payload.parameter}, commandType:`,
-        `${payload.commandType}`,
-      );
-      this.platform.log.debug('Humidifier %s pushAutoChanges -', this.accessory.displayName, JSON.stringify(payload));
+        this.platform.log.info(
+          'Sending request to SwitchBot API. command:',
+          `${payload.command}, parameter:`,
+          `${payload.parameter}, commandType:`,
+          `${payload.commandType}`,
+        );
+        this.platform.log.debug('Humidifier %s pushAutoChanges -', this.accessory.displayName, JSON.stringify(payload));
 
-      // Make the API request
-      const pushAuto = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
-      this.platform.log.debug('Humidifier %s Changes pushed -', this.accessory.displayName, pushAuto.data);
+        // Make the API request
+        const pushAuto = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
+        this.platform.log.debug('Humidifier %s Changes pushed -', this.accessory.displayName, pushAuto.data);
+      }
+    } catch (e) {
+      this.platform.log.error(JSON.stringify(e.message));
+      this.platform.log.debug('Humidifier %s -', this.accessory.displayName, JSON.stringify(e));
     }
   }
 
@@ -332,25 +337,30 @@ export class Humidifier {
    * Pushes the requested changes to the SwitchBot API
    */
   async pushActiveChanges() {
-    if (this.Active === this.platform.Characteristic.Active.INACTIVE) {
-      this.platform.log.debug('Pushing Off!');
-      const payload = {
-        commandType: 'command',
-        command: 'turnOff',
-        parameter: 'default',
-      } as any;
+    try {
+      if (this.Active === this.platform.Characteristic.Active.INACTIVE) {
+        this.platform.log.debug('Pushing Off!');
+        const payload = {
+          commandType: 'command',
+          command: 'turnOff',
+          parameter: 'default',
+        } as any;
 
-      this.platform.log.info(
-        'Sending request to SwitchBot API. command:',
-        `${payload.command}, parameter:`,
-        `${payload.parameter}, commandType:`,
-        `${payload.commandType}`,
-      );
-      this.platform.log.debug('Humidifier %s pushActiveChanges -', this.accessory.displayName, JSON.stringify(payload));
+        this.platform.log.info(
+          'Sending request to SwitchBot API. command:',
+          `${payload.command}, parameter:`,
+          `${payload.parameter}, commandType:`,
+          `${payload.commandType}`,
+        );
+        this.platform.log.debug('Humidifier %s pushActiveChanges -', this.accessory.displayName, JSON.stringify(payload));
 
-      // Make the API request
-      const pushActive = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
-      this.platform.log.debug('Humidifier %s Changes pushed -', this.accessory.displayName, pushActive.data);
+        // Make the API request
+        const pushActive = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
+        this.platform.log.debug('Humidifier %s Changes pushed -', this.accessory.displayName, pushActive.data);
+      }
+    } catch (e) {
+      this.platform.log.error(JSON.stringify(e.message));
+      this.platform.log.debug('Humidifier %s -', this.accessory.displayName, JSON.stringify(e));
     }
   }
 
@@ -362,7 +372,10 @@ export class Humidifier {
       this.platform.Characteristic.CurrentRelativeHumidity,
       this.CurrentRelativeHumidity,
     );
-    this.service.updateCharacteristic(this.platform.Characteristic.WaterLevel, this.WaterLevel);
+    this.service.updateCharacteristic(
+      this.platform.Characteristic.WaterLevel,
+      this.WaterLevel,
+    );
     this.service.updateCharacteristic(
       this.platform.Characteristic.CurrentHumidifierDehumidifierState,
       this.CurrentHumidifierDehumidifierState,
@@ -371,12 +384,18 @@ export class Humidifier {
       this.platform.Characteristic.TargetHumidifierDehumidifierState,
       this.TargetHumidifierDehumidifierState,
     );
-    this.service.updateCharacteristic(this.platform.Characteristic.Active, this.Active);
+    this.service.updateCharacteristic(
+      this.platform.Characteristic.Active,
+      this.Active,
+    );
     this.service.updateCharacteristic(
       this.platform.Characteristic.RelativeHumidityHumidifierThreshold,
       this.RelativeHumidityHumidifierThreshold,
     );
-    this.service.updateCharacteristic(this.platform.Characteristic.LockPhysicalControls, this.LockPhysicalControls);
+    this.service.updateCharacteristic(
+      this.platform.Characteristic.LockPhysicalControls,
+      this.LockPhysicalControls,
+    );
     this.temperatureservice.updateCharacteristic(
       this.platform.Characteristic.CurrentTemperature,
       this.CurrentTemperature,
