@@ -98,8 +98,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
         this.config.options.curtain.set_max;
       }
     }
-
-
     
     if (this.config.options!.ttl! < 120) {
       throw new Error('TTL must be above 120 (2 minutes).');

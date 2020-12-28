@@ -117,7 +117,7 @@ export class Curtain {
 
   parseStatus() {
     // CurrentPosition
-    this.CurrentPosition = 100 - this.deviceStatus.body.slidePosition;
+    this.CurrentPosition = (this.platform.config.options?.curtain?.set_max || 100) - this.deviceStatus.body.slidePosition;
     this.platform.log.debug(
       'Curtain %s CurrentPosition -',
       this.accessory.displayName,
@@ -185,7 +185,7 @@ export class Curtain {
   async pushChanges() {
     if (this.TargetPosition !== this.CurrentPosition) {
       this.platform.log.debug(`Pushing ${this.TargetPosition}`);
-      const adjustedTargetPosition = 100 - this.TargetPosition;
+      const adjustedTargetPosition = (this.platform.config.options?.curtain?.set_max || 100) - this.TargetPosition;
       const payload = {
         commandType: 'command',
         command: 'setPosition',
