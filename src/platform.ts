@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { PLATFORM_NAME, PLUGIN_NAME, DeviceURL } from './settings';
 import { Humidifier } from './Devices/Humidifier';
 import { Curtain } from './Devices/Curtain';
-import { irdevices, device, SwitchBotPlatformConfig, deviceResponses } from './configTypes';
+import { irdevices, device, SwitchBotPlatformConfig, deviceResponses, deviceStatusResponse } from './configTypes';
 
 /**
  * HomebridgePlatform
@@ -86,19 +86,19 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (this.config.options) {
       // Humidifier Config
-      if (this.config.options ?.humidifier) {
+      if (this.config.options?.humidifier) {
         this.config.options.humidifier.hide;
         this.config.options.humidifier.hide_tempeture;
       }
 
       // Curtain Config
-      if (this.config.options ?.curtain) {
+      if (this.config.options?.curtain) {
         this.config.options.curtain.hide;
         this.config.options.curtain.set_min;
         this.config.options.curtain.set_max;
       }
     }
-    
+
     if (this.config.options!.ttl! < 120) {
       throw new Error('TTL must be above 120 (2 minutes).');
     }
@@ -122,7 +122,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
   async discoverDevices() {
     try {
       const devices = (await this.axios.get(DeviceURL)).data;
-  
+
       if (this.config.devicediscovery) {
         this.deviceListInfo(devices);
       } else {
@@ -169,7 +169,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       // the accessory already exists
-      if (!this.config.options ?.humidifier ?.hide && devices.statusCode === 100) {
+      if (!this.config.options?.humidifier?.hide && devices.statusCode === 100) {
         this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
@@ -184,7 +184,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       } else {
         this.unregisterPlatformAccessories(existingAccessory);
       }
-    } else if (this.config.options ?.humidifier ?.hide) {
+    } else if (!this.config.options?.humidifier?.hide) {
       // the accessory does not yet exist, so we need to create it
       this.log.info('Adding new accessory:', `${device.deviceName} ${device.deviceType}`);
       this.log.debug(`Registering new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
@@ -223,7 +223,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       // the accessory already exists
-      if (!this.config.options ?.curtain ?.hide && devices.statusCode === 100) {
+      if (!this.config.options?.curtain?.hide && devices.statusCode === 100) {
         this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
@@ -238,7 +238,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       } else {
         this.unregisterPlatformAccessories(existingAccessory);
       }
-    } else if (this.config.options ?.curtain ?.hide) {
+    } else if (!this.config.options?.curtain?.hide) {
       // the accessory does not yet exist, so we need to create it
       this.log.info('Adding new accessory:', `${device.deviceName} ${device.deviceType}`);
       this.log.debug(`Registering new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
@@ -276,7 +276,14 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.log.warn(JSON.stringify(devices));
   }
 
-  public deviceInfo(device: irdevices | device) {
+  public async deviceInfo(device: irdevices | device) {
     this.log.warn(JSON.stringify(device));
+    const deviceStatus: deviceStatusResponse = (await this.axios.get(`${DeviceURL}/${device.deviceId}/status`)).data;
+    if (deviceStatus.message === 'success') {
+      this.log.warn('deviceStatus -', device.deviceName, JSON.stringify(deviceStatus));
+    } else {
+      this.log.warn('deviceStatus -', device.deviceName, JSON.stringify(deviceStatus.message));
+      this.log.error('Unable to retreive device status.');
+    }
   }
 }

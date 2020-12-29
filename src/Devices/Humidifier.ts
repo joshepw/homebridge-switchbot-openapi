@@ -236,7 +236,6 @@ export class Humidifier {
    */
   async refreshStatus() {
     try {
-      // this.platform.log.error('Humidifier - Reading', `${DeviceURL}/${this.device.deviceID}/devices`);
       const deviceStatus: deviceStatusResponse = (
         await this.platform.axios.get(`${DeviceURL}/${this.device.deviceId}/status`)
       ).data;
@@ -305,8 +304,8 @@ export class Humidifier {
     try {
       if (
         this.TargetHumidifierDehumidifierState ===
-        this.platform.Characteristic.TargetHumidifierDehumidifierState.HUMIDIFIER_OR_DEHUMIDIFIER &&
-      this.Active === this.platform.Characteristic.Active.ACTIVE
+          this.platform.Characteristic.TargetHumidifierDehumidifierState.HUMIDIFIER_OR_DEHUMIDIFIER &&
+        this.Active === this.platform.Characteristic.Active.ACTIVE
       ) {
         this.platform.log.debug('Pushing Auto!');
         const payload = {
@@ -352,7 +351,11 @@ export class Humidifier {
           `${payload.parameter}, commandType:`,
           `${payload.commandType}`,
         );
-        this.platform.log.debug('Humidifier %s pushActiveChanges -', this.accessory.displayName, JSON.stringify(payload));
+        this.platform.log.debug(
+          'Humidifier %s pushActiveChanges -',
+          this.accessory.displayName,
+          JSON.stringify(payload),
+        );
 
         // Make the API request
         const pushActive = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
@@ -372,10 +375,7 @@ export class Humidifier {
       this.platform.Characteristic.CurrentRelativeHumidity,
       this.CurrentRelativeHumidity,
     );
-    this.service.updateCharacteristic(
-      this.platform.Characteristic.WaterLevel,
-      this.WaterLevel,
-    );
+    this.service.updateCharacteristic(this.platform.Characteristic.WaterLevel, this.WaterLevel);
     this.service.updateCharacteristic(
       this.platform.Characteristic.CurrentHumidifierDehumidifierState,
       this.CurrentHumidifierDehumidifierState,
@@ -384,18 +384,12 @@ export class Humidifier {
       this.platform.Characteristic.TargetHumidifierDehumidifierState,
       this.TargetHumidifierDehumidifierState,
     );
-    this.service.updateCharacteristic(
-      this.platform.Characteristic.Active,
-      this.Active,
-    );
+    this.service.updateCharacteristic(this.platform.Characteristic.Active, this.Active);
     this.service.updateCharacteristic(
       this.platform.Characteristic.RelativeHumidityHumidifierThreshold,
       this.RelativeHumidityHumidifierThreshold,
     );
-    this.service.updateCharacteristic(
-      this.platform.Characteristic.LockPhysicalControls,
-      this.LockPhysicalControls,
-    );
+    this.service.updateCharacteristic(this.platform.Characteristic.LockPhysicalControls, this.LockPhysicalControls);
     this.temperatureservice.updateCharacteristic(
       this.platform.Characteristic.CurrentTemperature,
       this.CurrentTemperature,

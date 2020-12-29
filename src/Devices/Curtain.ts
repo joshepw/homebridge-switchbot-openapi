@@ -17,7 +17,7 @@ export class Curtain {
   doCurtainUpdate!: any;
 
   setNewTarget!: boolean;
-  setNewTargetTimer !: NodeJS.Timeout;
+  setNewTargetTimer!: NodeJS.Timeout;
 
   constructor(
     private readonly platform: SwitchBotPlatform,
@@ -49,7 +49,7 @@ export class Curtain {
     (this.service =
       this.accessory.getService(this.platform.Service.WindowCovering) ||
       this.accessory.addService(this.platform.Service.WindowCovering)),
-      `${this.device.deviceName} ${this.device.deviceType}`;
+    `${this.device.deviceName} ${this.device.deviceType}`;
 
     // To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
     // when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
@@ -121,7 +121,7 @@ export class Curtain {
 
   parseStatus() {
     // CurrentPosition
-    this.CurrentPosition = (this.platform.config.options?.curtain?.set_max || 100) - this.deviceStatus.body.slidePosition;
+    this.CurrentPosition = this.set_maxCurrentOption() - this.deviceStatus.body.slidePosition;
     this.platform.log.debug(
       'Curtain %s CurrentPosition -',
       this.accessory.displayName,
@@ -165,11 +165,7 @@ export class Curtain {
         );
         this.PositionState = this.platform.Characteristic.PositionState.DECREASING;
       } else {
-        this.platform.log.debug(
-          'Curtain %s -',
-          this.CurrentPosition,
-          'standby',
-        );
+        this.platform.log.debug('Curtain %s -', this.CurrentPosition, 'standby');
         this.PositionState = this.platform.Characteristic.PositionState.STOPPED;
       }
     } else {
@@ -217,7 +213,7 @@ export class Curtain {
   async pushChanges() {
     if (this.TargetPosition !== this.CurrentPosition) {
       this.platform.log.debug(`Pushing ${this.TargetPosition}`);
-      const adjustedTargetPosition = (this.platform.config.options?.curtain?.set_max || 100) - this.TargetPosition;
+      const adjustedTargetPosition = this.set_maxCurrentOption() - this.TargetPosition;
       const payload = {
         commandType: 'command',
         command: 'setPosition',
@@ -236,6 +232,10 @@ export class Curtain {
       const push = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
       this.platform.log.debug('Curtain %s Changes pushed -', this.accessory.displayName, push.data);
     }
+  }
+
+  private set_maxCurrentOption() {
+    return this.platform.config.options?.curtain?.set_max || 100;
   }
 
   updateHomeKitCharacteristics() {
