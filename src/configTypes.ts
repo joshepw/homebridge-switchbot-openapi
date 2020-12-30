@@ -5,7 +5,7 @@ import { PlatformConfig } from 'homebridge';
 export interface SwitchBotPlatformConfig extends PlatformConfig {
   credentials?: credentials;
   devicediscovery?: boolean;
-  options?: options;
+  options?: options | Record<string, never>;
 }
 
 export type credentials = {
@@ -14,17 +14,16 @@ export type credentials = {
 
 export type options = {
   ttl?: number;
+  hide_device: string[];
   humidifier?: humidifier;
   curtain?: curtain;
 };
 
 export type humidifier = {
-  hide?: number;
   hide_tempeture?: boolean;
 };
 
 export type curtain = {
-  hide?: number;
   set_max?: number;
   set_min?: number;
 };

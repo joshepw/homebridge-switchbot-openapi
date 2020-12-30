@@ -34,7 +34,8 @@ plugin allows you to access your SwitchBot Device(s) from HomeKit with
 
 ## Supported Devices
 
-- [SwitchBot Humidifiers](https://www.switch-bot.com/products/switchbot-smart-humidifier).
+- [SwitchBot Humidifier](https://www.switch-bot.com/products/switchbot-smart-humidifier).
+- [SwitchBot Curtain](https://www.switch-bot.com/products/switchbot-curtain).
 
 ## SwitchBotAPI
 

@@ -39,6 +39,13 @@
             "placeholder": 120,
             "description": "Indicates the number of seconds between polls of SwitchBot API."
           },
+          "hide_device": {
+            "title": "Hide Device",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
           "humidifier": {
             "type": "object",
             "properties": {
@@ -55,10 +62,6 @@
           "curtain": {
             "type": "object",
             "properties": {
-              "hide": {
-                "title": "Hide Curtain",
-                "type": "boolean"
-              },
               "set_min": {
                 "title": "Set Min",
                 "type": "number",
@@ -101,12 +104,34 @@
           "notitle": true
         },
         {
+          "type": "help",
+          "helpvalue": "<h5>Hide Device</h5><em class='primary-text'>Hide Device allows you to hide a device using it's deviceID.</em>"
+        },
+        {
+          "key": "options.hide_device",
+          "notitle": true,
+          "add": "Add Another Device",
+          "type": "array",
+          "items": [
+            {
+              "type": "div",
+              "displayFlex": true,
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "options.hide_device[]",
+                  "placeholder": "81F3UT59513F"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "type": "fieldset",
           "title": "Humidifier Settings",
           "expandable": true,
           "expanded": false,
           "items": [
-            "options.humidifier.hide",
             "options.humidifier.hide_temperature"
           ]
         },
@@ -116,7 +141,6 @@
           "expandable": true,
           "expanded": false,
           "items": [
-            "options.curtain.hide",
             "options.curtain.set_min",
             "options.curtain.set_max"
           ]
