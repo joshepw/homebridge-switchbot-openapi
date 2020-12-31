@@ -104,7 +104,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       }
 
       if (!this.config.options.ttl) {
-      this.config.options!.ttl! = 120;
+      this.config.options!.ttl! = 300;
       this.log.warn('Using Default Refresh Rate.');
       }
     }

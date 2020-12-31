@@ -36,7 +36,7 @@
             "title": "TTL",
             "type": "number",
             "minimum": 120,
-            "placeholder": 120,
+            "placeholder": 300,
             "description": "Indicates the number of seconds between polls of SwitchBot API."
           },
           "hide_device": {
