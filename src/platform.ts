@@ -87,24 +87,29 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     if (this.config.options) {
       // Hide Devices by DeviceID
       this.config.options.hide_device = this.config.options.hide_device || [];
-      // Humidifier Config
+
+      // Bot Config Options
+      if (this.config.options?.bot) {
+        this.config.options.bot;
+      }
+
+      // Humidifier Config Options
       if (this.config.options?.humidifier) {
         this.config.options.humidifier.hide_tempeture;
       }
 
-      // Curtain Config
+      // Curtain Config Options
       if (this.config.options?.curtain) {
         this.config.options.curtain.set_min;
         this.config.options.curtain.set_max;
       }
-    
 
-      if (this.config.options!.ttl! < 120) {
-        throw new Error('TTL must be above 120 (2 minutes).');
+      if (this.config.options!.refreshRate! < 120) {
+        throw new Error('Refresh Rate must be above 300 (5 minutes).');
       }
 
-      if (!this.config.options.ttl) {
-      this.config.options!.ttl! = 300;
+      if (!this.config.options.refreshRate) {
+      this.config.options!.refreshRate! = 300;
       this.log.warn('Using Default Refresh Rate.');
       }
     }

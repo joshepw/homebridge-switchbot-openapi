@@ -13,10 +13,15 @@ export type credentials = {
 };
 
 export type options = {
-  ttl?: number;
+  refreshRate?: number;
   hide_device: string[];
+  bot?: bot;
   humidifier?: humidifier;
   curtain?: curtain;
+};
+
+export type bot = {
+  
 };
 
 export type humidifier = {

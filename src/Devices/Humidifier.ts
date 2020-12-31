@@ -54,7 +54,7 @@ export class Humidifier {
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SwitchBot')
-      .setCharacteristic(this.platform.Characteristic.Model, "SWITCHBOT-HUMIDIFIER-W0801800")
+      .setCharacteristic(this.platform.Characteristic.Model, 'SWITCHBOT-HUMIDIFIER-W0801800')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.device.deviceId);
 
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
@@ -114,7 +114,7 @@ export class Humidifier {
     this.updateHomeKitCharacteristics();
 
     // Start an update interval
-    interval(this.platform.config.options!.ttl! * 1000)
+    interval(this.platform.config.options!.refreshRate! * 1000)
       .pipe(skipWhile(() => this.humidifierUpdateInProgress))
       .subscribe(() => {
         this.refreshStatus();

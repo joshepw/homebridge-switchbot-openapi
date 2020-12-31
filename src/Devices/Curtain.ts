@@ -41,7 +41,7 @@ export class Curtain {
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SwitchBot')
-      .setCharacteristic(this.platform.Characteristic.Model, "SWITCHBOT-CURTAIN-W0701600")
+      .setCharacteristic(this.platform.Characteristic.Model, 'SWITCHBOT-CURTAIN-W0701600')
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.device.deviceId);
 
     // get the WindowCovering service if it exists, otherwise create a new WindowCovering service
@@ -82,7 +82,7 @@ export class Curtain {
     this.updateHomeKitCharacteristics();
 
     // Start an update interval
-    interval(this.platform.config.options!.ttl! * 1000)
+    interval(this.platform.config.options!.refreshRate! * 1000)
       .pipe(skipWhile(() => this.curtainUpdateInProgress))
       .subscribe(() => {
         this.refreshStatus();
