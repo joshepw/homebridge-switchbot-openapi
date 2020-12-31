@@ -54,7 +54,7 @@ export class Humidifier {
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SwitchBot')
-      .setCharacteristic(this.platform.Characteristic.Model, this.device.deviceType)
+      .setCharacteristic(this.platform.Characteristic.Model, "SWITCHBOT-HUMIDIFIER-W0801800")
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.device.deviceId);
 
     // get the LightBulb service if it exists, otherwise create a new LightBulb service

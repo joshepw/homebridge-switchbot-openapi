@@ -41,7 +41,7 @@ export class Curtain {
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, 'SwitchBot')
-      .setCharacteristic(this.platform.Characteristic.Model, this.device.deviceType)
+      .setCharacteristic(this.platform.Characteristic.Model, "SWITCHBOT-CURTAIN-W0701600")
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.device.deviceId);
 
     // get the WindowCovering service if it exists, otherwise create a new WindowCovering service
