@@ -105,8 +105,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       }
 
       if (this.config.options!.refreshRate! < 120) {
-    if (this.config.options!.refreshRate! < 120) {
-        throw new Error('Refresh Rate must be above 120(2 minutes).');
+        throw new Error('Refresh Rate must be above 300 (5 minutes).');
       }
 
       if (!this.config.options.refreshRate) {
