@@ -22,7 +22,6 @@ export class AirConditioner {
 		private readonly platform: SwitchBotPlatform,
 		private accessory: PlatformAccessory,
 		public device: deviceTypeIR,
-		public readonly config: SwitchBotPlatformConfig
 	) {
 		this.isBusy = false;
 		this.currentMode = AirConditioner.MODE_AUTO;

@@ -16,7 +16,6 @@ export class Fan {
 		private readonly platform: SwitchBotPlatform,
 		private accessory: PlatformAccessory,
 		public device: deviceTypeIR,
-		public readonly config: SwitchBotPlatformConfig
 	) {
 		this.powerState = false;
 		this.isBusy = false;
@@ -68,7 +67,7 @@ export class Fan {
 	handleActiveGet(callback) {
 		this.platform.log.debug('Triggered GET Active');
 
-		callback(null, this.powerState ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE;
+		callback(null, this.powerState ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE);
 	}
 
 	/**

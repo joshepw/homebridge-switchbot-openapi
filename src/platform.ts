@@ -150,19 +150,19 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 				this.log.debug(JSON.stringify(deviceVirtual));
 			}
 
-			switch (deviceVirtual.deviceType) {
+			switch (deviceVirtual.remoteType) {
 				case 'Air Conditioner':
-					this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.deviceType);
+					this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.remoteType);
 					this.createAirConditioner(deviceVirtual, devices);
 					break;
 				case 'Fan':
 				case 'DIY Fan':
-					this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.deviceType);
+					this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.remoteType);
 					this.createFan(deviceVirtual, devices);
 					break;
-				default:
+				default: 
 					this.log.info(
-						`A SwitchBot Device has been discovered with Device Type: ${deviceVirtual.deviceType}, which is currently not supported.`,
+						`A SwitchBot Device has been discovered with Device Type: ${deviceVirtual.remoteType}, which is currently not supported.`,
 						'Submit Feature Requests Here: https://git.io/JL14Z,',
 					);
 			}
