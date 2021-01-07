@@ -70,7 +70,7 @@ export class AirConditioner {
 	 * Handle requests to get the current value of the "Target Heating Cooling State" characteristic
 	 */
 	handleTargetHeatingCoolingStateGet(callback) {
-		this.platform.log.debug('Triggered GET TargetHeatingCoolingState');
+		this.platform.log.info('Get TargetHeatingCoolingState');
 
 		callback(null, this.platform.Characteristic.TargetHeatingCoolingState.AUTO);
 	}
@@ -79,10 +79,10 @@ export class AirConditioner {
 	 * Handle requests to set the "Target Heating Cooling State" characteristic
 	 */
 	async handleTargetHeatingCoolingStateSet(value, callback) {
-		this.platform.log.debug('Triggered SET TargetHeatingCoolingState:' + value);
+		this.platform.log.info('Change TargetHeatingCoolingState to:' + value);
 
 		try {
-			if(this.platform.Characteristic.TargetHeatingCoolingState.OFF) {
+			if(value === this.platform.Characteristic.TargetHeatingCoolingState.OFF) {
 				await this.pushChanges('turnOff');
 				this.currentMode = AirConditioner.MODE_AUTO;
 				this.currentState = value;
@@ -97,7 +97,7 @@ export class AirConditioner {
 						break;
 		
 					case this.platform.Characteristic.TargetHeatingCoolingState.HEAT:
-						this.currentMode = AirConditioner.MODE_FAN;
+						this.currentMode = AirConditioner.MODE_HEAT;
 						break;
 				
 					default:

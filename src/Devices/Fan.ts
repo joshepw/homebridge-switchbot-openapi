@@ -1,9 +1,7 @@
 import { Service, PlatformAccessory } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
-import { interval, Subject } from 'rxjs';
-import { debounceTime, skipWhile, tap } from 'rxjs/operators';
 import { DeviceURL } from '../settings';
-import { irdevices as deviceTypeIR, deviceStatusResponse, SwitchBotPlatformConfig } from '../configTypes';
+import { irdevices as deviceTypeIR, SwitchBotPlatformConfig } from '../configTypes';
 
 export class Fan {
 	private service: Service;
@@ -19,7 +17,7 @@ export class Fan {
 	) {
 		this.powerState = false;
 		this.isBusy = false;
-		this.currentRotateState = 0;
+		this.currentRotateState = this.platform.Characteristic.SwingMode.SWING_DISABLED;
 
 		this.service = this.accessory.getService(this.platform.Service.Fanv2) || this.accessory.addService(this.platform.Service.Fanv2);
 
@@ -43,7 +41,7 @@ export class Fan {
 	handleSwingModeGet(callback) {
 		this.platform.log.debug('Triggered GET Active');
 
-		callback(null, this.platform.Characteristic.SwingMode.SWING_ENABLED);
+		callback(null, this.currentRotateState);
 	}
 
 	/**
@@ -53,7 +51,7 @@ export class Fan {
 		this.platform.log.debug('Triggered SET Active:' + value);
 
 		try {
-			await this.pushChanges('turnOn');
+			await this.pushChanges('swing');
 		} catch (error) {
 			this.platform.log.error(error);
 		}
