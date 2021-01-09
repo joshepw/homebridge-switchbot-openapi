@@ -17,7 +17,7 @@
         "type": "object",
         "properties": {
           "openToken": {
-            "title": "Open Token",
+            "title": "Token",
             "type": "string",
             "required": true
           },
@@ -32,14 +32,68 @@
       "options": {
         "type": "object",
         "properties": {
-          "ttl": {
-            "title": "TTL",
+          "refreshRate": {
+            "title": "Refresh Rate",
             "type": "number",
             "minimum": 120,
-            "placeholder": 120,
+            "placeholder": 300,
             "description": "Indicates the number of seconds between polls of SwitchBot API."
+          },
+          "hide_device": {
+            "title": "Hide Device",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bot": {
+            "type": "object",
+            "properties": {
+              "device_switch": {
+                "title": "Switch Mode Bots",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "device_press": {
+                "title": "Press Mode Bots",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "humidifier": {
+            "type": "object",
+            "properties": {
+              "hide_temperature": {
+                "title": "Hide Humidifier's Temperature Sensor",
+                "type": "boolean"
+              }
+            }
+          },
+          "curtain": {
+            "type": "object",
+            "properties": {
+              "set_min": {
+                "title": "Set Min",
+                "type": "number",
+                "placeholder": "0"
+              },
+              "set_max": {
+                "title": "Set Max",
+                "type": "number",
+                "placeholder": "100"
+              }
+            }
           }
         }
+      },
+      "devicediscovery": {
+        "name": "Device Discovery",
+        "type": "boolean"
       }
     }
   },
@@ -62,11 +116,107 @@
       "items": [
         {
           "type": "help",
-          "helpvalue": "<h5>TTL</h5><em class='primary-text'>TTL indicates the number of seconds between polls of SwitchBot API.</em>"
+          "helpvalue": "<h5>Refresh Rate</h5><em class='primary-text'>Refresh Rate indicates the number of seconds between polls of SwitchBot API.</em>"
         },
         {
-          "key": "options.ttl",
+          "key": "options.refreshRate",
           "notitle": true
+        },
+        {
+          "type": "help",
+          "helpvalue": "<h5>Hide Device</h5><em class='primary-text'>Hide Device allows you to hide a device using it's deviceID.</em>"
+        },
+        {
+          "key": "options.hide_device",
+          "notitle": true,
+          "add": "Add Another Device",
+          "type": "array",
+          "items": [
+            {
+              "type": "div",
+              "displayFlex": true,
+              "flex-direction": "row",
+              "items": [
+                {
+                  "key": "options.hide_device[]",
+                  "placeholder": "81F3UT59513F"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Bot Settings",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            {
+              "key": "options.bot.device_switch",
+              "notitle": true,
+              "add": "Add Another Bot in Switch Mode",
+              "type": "array",
+              "items": [
+                {
+                  "type": "div",
+                  "displayFlex": true,
+                  "flex-direction": "row",
+                  "items": [
+                    {
+                      "key": "options.bot.device_switch[]",
+                      "placeholder": "81F3UT59513F"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "options.bot.device_press",
+              "notitle": true,
+              "add": "Add Another Bot in Press Mode",
+              "type": "array",
+              "items": [
+                {
+                  "type": "div",
+                  "displayFlex": true,
+                  "flex-direction": "row",
+                  "items": [
+                    {
+                      "key": "options.bot.device_press[]",
+                      "placeholder": "81F3UT59513F"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Humidifier Settings",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "options.humidifier.hide_temperature"
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "Curtain Settings",
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            "options.curtain.set_min",
+            "options.curtain.set_max"
+          ]
+        },
+        {
+          "type": "help",
+          "helpvalue": "<h5>Device Discovery</h5><em class='primary-text'>Enables Device Info Logging.</em>"
+        },
+        {
+          "key": "devicediscovery",
+          "title": "Device Discovery"
         }
       ]
     }

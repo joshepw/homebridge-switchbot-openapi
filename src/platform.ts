@@ -2,7 +2,11 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, Service, Charact
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { PLATFORM_NAME, PLUGIN_NAME, DeviceURL } from './settings';
 import { Humidifier } from './Devices/Humidifier';
-import { irdevices, device, SwitchBotPlatformConfig, deviceResponses } from './configTypes';
+import { Bot } from './Devices/Bot';
+import { Meter } from './Devices/Meter';
+import { Curtain } from './Devices/Curtain';
+import { irdevices, device, SwitchBotPlatformConfig, deviceResponses, deviceStatusResponse } from './configTypes';
+
 
 /**
  * HomebridgePlatform
@@ -84,18 +88,42 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.config.options = this.config.options || {};
 
     if (this.config.options) {
-      this.config.options?.humidifier;
-    }
+      // Hide Devices by DeviceID
+      this.config.options.hide_device = this.config.options.hide_device || [];
 
-    if (this.config.options!.ttl! < 120) {
-      throw new Error('TTL must be above 120 (2 minutes).');
-    }
+      // Bot Config Options
+      if (this.config.options?.bot) {
+        this.config.options.bot.device_press;
+        this.config.options.bot.device_switch;
+      }
+      
+      // Meter Config Options
+      if (this.config.options?.meter) {
+        this.config.options.meter.hide_temperature;
+        this.config.options.meter.hide_humidity;
+      }
 
-    if (!this.config.options.ttl) {
-      this.config.options!.ttl! = 120;
+      // Humidifier Config Options
+      if (this.config.options?.humidifier) {
+        this.config.options.humidifier.hide_temperature;
+      }
+
+      // Curtain Config Options
+      if (this.config.options?.curtain) {
+        this.config.options.curtain.set_min;
+        this.config.options.curtain.set_max;
+      }
+
+      if (this.config.options!.refreshRate! < 120) {
+        throw new Error('Refresh Rate must be above 120 (2 minutes).');
+      }
+
+      if (!this.config.options.refreshRate) {
+      this.config.options!.refreshRate! = 300;
       this.log.warn('Using Default Refresh Rate.');
+      }
     }
-
+  
     if (!this.config.credentials) {
       throw new Error('Missing Credentials');
     }
@@ -108,31 +136,50 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
    * this method discovers the Locations
    */
   async discoverDevices() {
-    const devices = (await this.axios.get(DeviceURL)).data;
-    if (this.config.devicediscovery) {
-      this.deviceListInfo(devices);
-    } else {
-      this.log.debug(JSON.stringify(devices));
-    }
-    this.log.info(`Total Devices Found: ${devices.body.deviceList.length}`);
-    for (const device of devices.body.deviceList) {
+    try {
+      const devices = (await this.axios.get(DeviceURL)).data;
+
       if (this.config.devicediscovery) {
-        this.deviceInfo(device);
+        this.deviceListInfo(devices);
       } else {
-        this.log.debug(JSON.stringify(device));
+        this.log.debug(JSON.stringify(devices));
       }
-      // For Future Devices
-      switch (device.deviceType) {
-        case 'Humidifier':
-          this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
-          this.createHumidifier(device, devices);
-          break;
-        default:
-          this.log.info(
-            `A SwitchBot Device has been discovered with Device Type: ${device.deviceType}, which is currently not supported.`,
-            'Submit Feature Requests Here: https://git.io/JL14Z,',
-          );
+      this.log.info('Total Devices Found:', devices.body.deviceList.length);
+      for (const device of devices.body.deviceList) {
+        if (this.config.devicediscovery) {
+          this.deviceInfo(device);
+        } else {
+          this.log.debug(JSON.stringify(device));
+        }
+        // For Future Devices
+        switch (device.deviceType) {
+          case 'Humidifier':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createHumidifier(device, devices);
+            break;
+          case 'Bots':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createBot(device, devices);
+            break;
+          case 'Meter':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createMeter(device, devices);
+            break;
+          case 'Curtain':
+            this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
+            this.createCurtain(device, devices);
+            break;
+          default:
+            this.log.info(
+              'A SwitchBot Device has been discovered with Device Type: %s, which is currently not supported.',
+              device.deviceType,
+              'Submit Feature Requests Here: https://git.io/JL14Z',
+            );
+        }
       }
+    } catch (e) {
+      this.log.error('Failed to Discover Devices.', JSON.stringify(e.message));
+      this.log.debug(JSON.stringify(e));
     }
   }
 
@@ -147,8 +194,12 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
     if (existingAccessory) {
       // the accessory already exists
-      if (devices.statusCode === 100) {
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+      if (!this.config.options?.hide_device.includes(device.deviceId) && devices.statusCode === 100) {
+        this.log.info(
+          'Restoring existing accessory from cache: %s DeviceID: %s',
+          existingAccessory.displayName,
+          device.deviceId,
+        );
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
         //existingAccessory.context.firmwareRevision = firmware;
@@ -162,10 +213,14 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       } else {
         this.unregisterPlatformAccessories(existingAccessory);
       }
-    } else {
+    } else if (!this.config.options?.hide_device.includes(device.deviceId)) {
       // the accessory does not yet exist, so we need to create it
-      this.log.info('Adding new accessory:', `${device.deviceName} ${device.deviceType}`);
-      this.log.debug(`Registering new device: ${device.deviceName} ${device.deviceType} - ${device.deviceId}`);
+      this.log.info(
+        'Adding new accessory: %s %s DeviceID: %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
 
       // create a new accessory
       const accessory = new this.api.platformAccessory(`${device.deviceName} ${device.deviceType}`, uuid);
@@ -185,6 +240,214 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       // link the accessory to your platform
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       this.accessories.push(accessory);
+    } else {
+      this.log.error(
+        'Unable to Register new device: %s %s - %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+    }
+  }
+
+  private async createBot(device: device, devices: deviceResponses) {
+    const uuid = this.api.hap.uuid.generate(
+      `${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+    );
+
+    // see if an accessory with the same uuid has already been registered and restored from
+    // the cached devices we stored in the `configureAccessory` method above
+    const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
+
+    if (existingAccessory) {
+      // the accessory already exists
+      if (!this.config.options?.hide_device.includes(device.deviceId) && devices.statusCode === 100) {
+        this.log.info(
+          'Restoring existing accessory from cache: %s DeviceID: %s',
+          existingAccessory.displayName,
+          device.deviceId,
+        );
+
+        // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
+        //existingAccessory.context.firmwareRevision = firmware;
+        this.api.updatePlatformAccessories([existingAccessory]);
+        // create the accessory handler for the restored accessory
+        // this is imported from `platformAccessory.ts`
+        new Bot(this, existingAccessory, device);
+        this.log.debug(
+          `Bot UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+        );
+      } else {
+        this.unregisterPlatformAccessories(existingAccessory);
+      }
+    } else if (!this.config.options?.hide_device.includes(device.deviceId)) {
+      // the accessory does not yet exist, so we need to create it
+      this.log.info(
+        'Adding new accessory: %s %s DeviceID: %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+
+      // create a new accessory
+      const accessory = new this.api.platformAccessory(`${device.deviceName} ${device.deviceType}`, uuid);
+
+      // store a copy of the device object in the `accessory.context`
+      // the `context` property can be used to store any data about the accessory you may need
+      //accessory.context.firmwareRevision = firmware;
+      accessory.context.device = device;
+      // accessory.context.firmwareRevision = findaccessories.accessoryAttribute.softwareRevision;
+      // create the accessory handler for the newly create accessory
+      // this is imported from `platformAccessory.ts`
+      new Bot(this, accessory, device);
+      this.log.debug(
+        `Bot UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+      );
+
+      // link the accessory to your platform
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.accessories.push(accessory);
+    } else {
+      this.log.error(
+        'Unable to Register new device: %s %s - %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+    }
+  }
+
+  private async createMeter(device: device, devices: deviceResponses) {
+    const uuid = this.api.hap.uuid.generate(
+      `${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+    );
+
+    // see if an accessory with the same uuid has already been registered and restored from
+    // the cached devices we stored in the `configureAccessory` method above
+    const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
+
+    if (existingAccessory) {
+      // the accessory already exists
+      if (!this.config.options?.hide_device.includes(device.deviceId) && devices.statusCode === 100) {
+        this.log.info(
+          'Restoring existing accessory from cache: %s DeviceID: %s',
+          existingAccessory.displayName,
+          device.deviceId,
+        );
+
+        // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
+        //existingAccessory.context.firmwareRevision = firmware;
+        this.api.updatePlatformAccessories([existingAccessory]);
+        // create the accessory handler for the restored accessory
+        // this is imported from `platformAccessory.ts`
+        new Meter(this, existingAccessory, device);
+        this.log.debug(
+          `Meter UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+        );
+      } else {
+        this.unregisterPlatformAccessories(existingAccessory);
+      }
+    } else if (!this.config.options?.hide_device.includes(device.deviceId)) {
+      // the accessory does not yet exist, so we need to create it
+      this.log.info(
+        'Adding new accessory: %s %s DeviceID: %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+
+      // create a new accessory
+      const accessory = new this.api.platformAccessory(`${device.deviceName} ${device.deviceType}`, uuid);
+
+      // store a copy of the device object in the `accessory.context`
+      // the `context` property can be used to store any data about the accessory you may need
+      //accessory.context.firmwareRevision = firmware;
+      accessory.context.device = device;
+      // accessory.context.firmwareRevision = findaccessories.accessoryAttribute.softwareRevision;
+      // create the accessory handler for the newly create accessory
+      // this is imported from `platformAccessory.ts`
+      new Meter(this, accessory, device);
+      this.log.debug(
+        `Meter UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+      );
+
+      // link the accessory to your platform
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.accessories.push(accessory);
+    } else {
+      this.log.error(
+        'Unable to Register new device: %s %s - %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+    }
+  }
+
+  private async createCurtain(device: device, devices: deviceResponses) {
+    const uuid = this.api.hap.uuid.generate(
+      `${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+    );
+
+    // see if an accessory with the same uuid has already been registered and restored from
+    // the cached devices we stored in the `configureAccessory` method above
+    const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
+
+    if (existingAccessory) {
+      // the accessory already exists
+      if (!this.config.options?.hide_device.includes(device.deviceId) && devices.statusCode === 100) {
+        this.log.info(
+          'Restoring existing accessory from cache: %s DeviceID: %s',
+          existingAccessory.displayName,
+          device.deviceId,
+        );
+
+        // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
+        //existingAccessory.context.firmwareRevision = firmware;
+        this.api.updatePlatformAccessories([existingAccessory]);
+        // create the accessory handler for the restored accessory
+        // this is imported from `platformAccessory.ts`
+        new Curtain(this, existingAccessory, device);
+        this.log.debug(
+          `Curtain UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+        );
+      } else {
+        this.unregisterPlatformAccessories(existingAccessory);
+      }
+    } else if (!this.config.options?.hide_device.includes(device.deviceId)) {
+      // the accessory does not yet exist, so we need to create it
+      this.log.info(
+        'Adding new accessory: %s %s DeviceID: %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
+
+      // create a new accessory
+      const accessory = new this.api.platformAccessory(`${device.deviceName} ${device.deviceType}`, uuid);
+
+      // store a copy of the device object in the `accessory.context`
+      // the `context` property can be used to store any data about the accessory you may need
+      //accessory.context.firmwareRevision = firmware;
+      accessory.context.device = device;
+      // accessory.context.firmwareRevision = findaccessories.accessoryAttribute.softwareRevision;
+      // create the accessory handler for the newly create accessory
+      // this is imported from `platformAccessory.ts`
+      new Curtain(this, accessory, device);
+      this.log.debug(
+        `Curtain UDID: ${device.deviceName}-${device.deviceId}-${device.deviceType}-${device.hubDeviceId}`,
+      );
+
+      // link the accessory to your platform
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.accessories.push(accessory);
+    } else {
+      this.log.error(
+        'Unable to Register new device: %s %s - %s',
+        device.deviceName,
+        device.deviceType,
+        device.deviceId,
+      );
     }
   }
 
@@ -198,7 +461,14 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
     this.log.warn(JSON.stringify(devices));
   }
 
-  public deviceInfo(device: irdevices | device) {
+  public async deviceInfo(device: irdevices | device) {
     this.log.warn(JSON.stringify(device));
+    const deviceStatus: deviceStatusResponse = (await this.axios.get(`${DeviceURL}/${device.deviceId}/status`)).data;
+    if (deviceStatus.message === 'success') {
+      this.log.warn('deviceStatus -', device.deviceName, JSON.stringify(deviceStatus));
+    } else {
+      this.log.warn('deviceStatus -', device.deviceName, JSON.stringify(deviceStatus.message));
+      this.log.error('Unable to retreive device status.');
+    }
   }
 }

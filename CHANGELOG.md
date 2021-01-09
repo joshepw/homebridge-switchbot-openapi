@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/)
 
+## [Version 1.1.0](https://github.com/OpenWonderLabs/homebridge-switchbot-openapi/compare/v1.0.1...v1.1.0) (2021-01-08)
+
+### Changes
+
+- Allow for Hiding Devices based off of `DeviceID` instead of `DeviceType`.
+- Adds Support for [SwitchBot Meter](https://www.switch-bot.com/products/switchbot-meter).
+- Adds Beta Support for [SwitchBot Curtain](https://www.switch-bot.com/products/switchbot-curtain).
+
 ## [Version 1.0.1](https://github.com/OpenWonderLabs/homebridge-switchbot-openapi/compare/v1.0.0...v1.0.1) (2020-12-25)
 
 ### Changes
@@ -13,7 +21,7 @@ All notable changes to this project will be documented in this file. This projec
 ### Changes
 
 - Offical Release of OpenToken Switchbot API Support.
-- Support for [SwitchBot Humidifiers](https://www.switch-bot.com/products/switchbot-smart-humidifier).
+- Adds Support for [SwitchBot Humidifier](https://www.switch-bot.com/products/switchbot-smart-humidifier).
 
 ## [Version 0.1.0](https://github.com/OpenWonderLabs/homebridge-switchbot-openapi/releases/tag/v0.1.0) (2020-12-19)
 
