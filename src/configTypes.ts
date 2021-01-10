@@ -6,6 +6,7 @@ export interface SwitchBotPlatformConfig extends PlatformConfig {
 	credentials?: credentials;
 	devicediscovery?: boolean;
 	options?: options;
+	hidden?: Array<string>
 }
 
 export type credentials = {

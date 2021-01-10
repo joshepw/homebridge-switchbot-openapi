@@ -1,29 +1,22 @@
-import { Service, PlatformAccessory } from 'homebridge';
+import { BaseDevice } from './BaseDevice';
+import { PlatformAccessory } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
-import { DeviceURL } from '../settings';
-import { irdevices as deviceTypeIR, SwitchBotPlatformConfig } from '../configTypes';
+import { irdevices as deviceTypeIR } from '../configTypes';
 
-export class Speaker {
-	private service: Service;
-	private serviceSwitch: Service;
-	private isBusy: boolean = false;
-
+export class Speaker extends BaseDevice {
 	muted: boolean = false;
 
 	constructor(
-		private readonly platform: SwitchBotPlatform,
-		private accessory: PlatformAccessory,
+		protected readonly platform: SwitchBotPlatform,
+		protected accessory: PlatformAccessory,
 		public device: deviceTypeIR,
 	) {
-		this.service = this.accessory.getService(this.platform.Service.TelevisionSpeaker) || this.accessory.addService(this.platform.Service.TelevisionSpeaker);
-		this.serviceSwitch = this.accessory.getService(this.platform.Service.StatelessProgrammableSwitch) || this.accessory.addService(this.platform.Service.StatelessProgrammableSwitch);
+		super(platform, accessory, device, platform.Service.TelevisionSpeaker);
 
-		this.service.setCharacteristic(
-			this.platform.Characteristic.Name,
-			`${this.device.deviceName} ${this.device.remoteType}`,
-		);
+		this.service.getCharacteristic(this.platform.Characteristic.On)
+			.on('get', this.handleOnGet.bind(this))
+			.on('set', this.handleOnSet.bind(this));
 
-		// create handlers for required characteristics
 		this.service.getCharacteristic(this.platform.Characteristic.Mute)
 			.on('get', this.handleMuteGet.bind(this))
 			.on('set', this.handleMuteSet.bind(this));
@@ -50,18 +43,12 @@ export class Speaker {
 		callback(null);
 	}
 
-	/**
-	 * Handle requests to get the current value of the "Mute" characteristic
-	 */
 	handleMuteGet(callback) {
 		this.platform.log.debug('Triggered GET Mute');
 
 		callback(null, this.muted ? 1 : 0);
 	}
 
-	/**
-	 * Handle requests to set the "Mute" characteristic
-	 */
 	async handleMuteSet(value, callback) {
 		this.platform.log.debug('Triggered SET Mute:' + value);
 
@@ -73,33 +60,5 @@ export class Speaker {
 		}
 
 		callback(null);
-	}
-
-	async pushChanges(command: string, parameter: string = 'default') {
-		if (this.isBusy) {
-			return;
-		}
-
-		this.isBusy = true;
-
-		const payload = {
-			commandType: 'command',
-			command,
-			parameter,
-		} as any;
-
-		this.platform.log.info(
-			`Sending request to SwitchBot API.${this.device.deviceName} command:`,
-			`${payload.command}, parameter:`,
-			`${payload.parameter}, commandType:`,
-			`${payload.commandType}`,
-		);
-		this.platform.log.debug('Fan %s pushChanges -', this.accessory.displayName, JSON.stringify(payload));
-
-		// Make the API request
-		const push = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
-		this.platform.log.debug('Fan %s Changes pushed -', this.accessory.displayName, push.data);
-
-		this.isBusy = false;
 	}
 }

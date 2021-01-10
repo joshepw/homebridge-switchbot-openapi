@@ -23,6 +23,18 @@
 					}
 				}
 			},
+			"devicediscovery": {
+				"title": "Auto discovery devices",
+				"type": "boolean"
+			},
+			"hidden": {
+				"title": "Hidden devices",
+				"type": "array",
+				"items": {
+					"title": "Device name",
+					"type": "string"
+				}
+			},
 			"options": {
 				"type": "object",
 				"properties": {

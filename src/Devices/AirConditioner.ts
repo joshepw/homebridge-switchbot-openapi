@@ -1,12 +1,9 @@
-import { Service, PlatformAccessory } from 'homebridge';
+import { BaseDevice } from './BaseDevice';
+import { PlatformAccessory } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
-import { DeviceURL } from '../settings';
-import { irdevices as deviceTypeIR, SwitchBotPlatformConfig } from '../configTypes';
+import { irdevices as deviceTypeIR } from '../configTypes';
 
-export class AirConditioner {
-	private service: Service;
-	private isBusy: boolean;
-
+export class AirConditioner extends BaseDevice {
 	static readonly MODE_AUTO = 1;
 	static readonly MODE_COOL = 2;
 	static readonly MODE_DRY = 3;
@@ -19,23 +16,17 @@ export class AirConditioner {
 	currentState: number;
 
 	constructor(
-		private readonly platform: SwitchBotPlatform,
-		private accessory: PlatformAccessory,
+		protected readonly platform: SwitchBotPlatform,
+		protected accessory: PlatformAccessory,
 		public device: deviceTypeIR,
 	) {
-		this.isBusy = false;
+		super(platform, accessory, device, platform.Service.Thermostat);
+
 		this.currentMode = AirConditioner.MODE_AUTO;
 		this.currentState = this.platform.Characteristic.TargetHeatingCoolingState.AUTO;
 
 		this.currentTemperature = 26;
 		this.currentTempUnit = this.platform.Characteristic.TemperatureDisplayUnits.CELSIUS;
-
-		this.service = this.service = this.accessory.getService(this.platform.Service.Thermostat) || this.accessory.addService(this.platform.Service.Thermostat);
-
-		this.service.setCharacteristic(
-			this.platform.Characteristic.Name,
-			`${this.device.deviceName} ${this.device.remoteType}`,
-		);
 
 		this.service.getCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState)
 			.on('get', this.handleCurrentHeatingCoolingStateGet.bind(this));
@@ -56,28 +47,18 @@ export class AirConditioner {
 			.on('set', this.handleTemperatureDisplayUnitsSet.bind(this));
 	}
 
-	/**
-   * Handle requests to get the current value of the "Current Heating Cooling State" characteristic
-   */
 	handleCurrentHeatingCoolingStateGet(callback) {
 		this.platform.log.debug('Triggered GET CurrentHeatingCoolingState');
 
 		callback(null, this.currentMode);
 	}
 
-
-	/**
-	 * Handle requests to get the current value of the "Target Heating Cooling State" characteristic
-	 */
 	handleTargetHeatingCoolingStateGet(callback) {
 		this.platform.log.info('Get TargetHeatingCoolingState');
 
 		callback(null, this.platform.Characteristic.TargetHeatingCoolingState.AUTO);
 	}
 
-	/**
-	 * Handle requests to set the "Target Heating Cooling State" characteristic
-	 */
 	async handleTargetHeatingCoolingStateSet(value, callback) {
 		this.platform.log.info('Change TargetHeatingCoolingState to:' + value);
 
@@ -115,28 +96,18 @@ export class AirConditioner {
 		callback(null);
 	}
 
-	/**
-	 * Handle requests to get the current value of the "Current Temperature" characteristic
-	 */
 	handleCurrentTemperatureGet(callback) {
 		this.platform.log.debug(`Get CurrentTemperature ${this.getTemperatureValue(this.currentTemperature)}˚C`);
 
 		callback(null,this.getTemperatureValue(this.currentTemperature));
 	}
 
-
-	/**
-	 * Handle requests to get the current value of the "Target Temperature" characteristic
-	 */
 	handleTargetTemperatureGet(callback) {
 		this.platform.log.debug(`Get Temperature: ${this.getTemperatureValue(this.currentTemperature)}˚C`);
 
 		callback(null, this.getTemperatureValue(this.currentTemperature));
 	}
 
-	/**
-	 * Handle requests to set the "Target Temperature" characteristic
-	 */
 	async handleTargetTemperatureSet(value, callback) {
 		this.platform.log.debug(`Setting Temperature: ${this.getTemperatureValue(value)}˚C`);
 
@@ -153,16 +124,10 @@ export class AirConditioner {
 		callback(null);
 	}
 
-	/**
-	 * Handle requests to get the current value of the "Temperature Display Units" characteristic
-	 */
 	handleTemperatureDisplayUnitsGet(callback) {
 		callback(null, this.currentTempUnit);
 	}
 
-	/**
-	 * Handle requests to set the "Temperature Display Units" characteristic
-	 */
 	handleTemperatureDisplayUnitsSet(value, callback) {
 		this.platform.log.debug('Triggered SET TemperatureDisplayUnits:' + value);
 
@@ -178,34 +143,6 @@ export class AirConditioner {
 	}
 
 	getCommandValuesForPush() {
-		return `${this.getTemperatureValue(this.currentTemperature)},${this.currentMode},1,on`;
-	}
-
-	async pushChanges(command: string, parameter: string = 'default') {
-		if (this.isBusy) {
-			throw new Error("The pushing service is busy");
-		}
-
-		this.isBusy = true;
-
-		const payload = {
-			commandType: 'command',
-			command,
-			parameter,
-		} as any;
-
-		this.platform.log.info(
-			`Sending request to SwitchBot API.${this.device.deviceName} command:`,
-			`${payload.command}, parameter:`,
-			`${payload.parameter}, commandType:`,
-			`${payload.commandType}`,
-		);
-		this.platform.log.debug('Fan %s pushChanges -', this.accessory.displayName, JSON.stringify(payload));
-
-		// Make the API request
-		const push = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
-		this.platform.log.debug('Fan %s Changes pushed -', this.accessory.displayName, push.data);
-
-		this.isBusy = false;
+		return `${this.getTemperatureValue(this.currentTemperature)},${this.currentMode},1,${this.currentMode === this.platform.Characteristic.TargetHeatingCoolingState.OFF ? 'off' : 'on'}`;
 	}
 }

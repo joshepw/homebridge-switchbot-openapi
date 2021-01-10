@@ -34,14 +34,14 @@ export class Humidifier {
 		public device: deviceType,
 	) {
 		// default placeholders
-		this.CurrentRelativeHumidity;
-		this.TargetHumidifierDehumidifierState;
-		this.CurrentHumidifierDehumidifierState;
-		this.Active;
-		this.RelativeHumidityHumidifierThreshold;
-		this.LockPhysicalControls;
-		this.CurrentTemperature;
-		this.WaterLevel;
+		this.CurrentRelativeHumidity = 0;
+		this.TargetHumidifierDehumidifierState = 0;
+		this.CurrentHumidifierDehumidifierState = 0;
+		this.Active = 0;
+		this.RelativeHumidityHumidifierThreshold = 0;
+		this.LockPhysicalControls = 0;
+		this.CurrentTemperature = 0;
+		this.WaterLevel = 0;
 
 		// this is subject we use to track when we need to POST changes to the SwitchBot API
 		this.doHumidifierUpdate = new Subject();
@@ -59,10 +59,7 @@ export class Humidifier {
 
 		// get the LightBulb service if it exists, otherwise create a new LightBulb service
 		// you can create multiple services for each accessory
-		(this.service =
-			this.accessory.getService(this.platform.Service.HumidifierDehumidifier) ||
-			this.accessory.addService(this.platform.Service.HumidifierDehumidifier)),
-			`${this.device.deviceName} ${this.device.deviceType}`;
+		this.service = this.accessory.getService(this.platform.Service.HumidifierDehumidifier) || this.accessory.addService(this.platform.Service.HumidifierDehumidifier);
 
 		// To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
 		// when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
@@ -102,11 +99,7 @@ export class Humidifier {
 			.on('set', this.handleLockPhysicalControlsSet.bind(this));
 
 		// create a new Temperature Sensor service
-		(this.temperatureservice =
-			this.accessory.getService(this.platform.Service.TemperatureSensor) ||
-			this.accessory.addService(this.platform.Service.TemperatureSensor)),
-			`${this.device.deviceName} ${this.device.deviceType}`;
-
+		this.temperatureservice = this.accessory.getService(this.platform.Service.TemperatureSensor) || this.accessory.addService(this.platform.Service.TemperatureSensor);
 		this.temperatureservice.setCharacteristic(this.platform.Characteristic.CurrentTemperature, this.CurrentTemperature);
 
 		// Retrieve initial values and updateHomekit
@@ -144,62 +137,57 @@ export class Humidifier {
 	 * Parse the device status from the SwitchBot api
 	 */
 	parseStatus() {
-		// Current Relative Humidity
 		this.CurrentRelativeHumidity = this.deviceStatus.body.humidity;
-		// Water Level
-		this.WaterLevel = 100; //Will be implimented once available in API.
-		// Active
-		switch (this.deviceStatus.body.power) {
-			case 'on':
-				this.Active = 1;
-				break;
-			default:
-				this.Active = 0;
-		}
+		this.WaterLevel = 100;
+		this.Active = this.deviceStatus.body.power == 'on' ? 1 : 0;
+		
 		this.platform.log.debug('Humidifier %s Active -', this.accessory.displayName, 'Device is Currently: ', this.Active);
+		
 		// Target Humidifier Dehumidifier State
-		switch (this.deviceStatus.body.auto) {
-			case true:
-				this.TargetHumidifierDehumidifierState = 0;
+		if (this.deviceStatus.body.auto === true) {
+			this.TargetHumidifierDehumidifierState = 0;
+			this.CurrentHumidifierDehumidifierState = 2;
+			this.RelativeHumidityHumidifierThreshold = this.CurrentRelativeHumidity;
+		} else {
+			this.TargetHumidifierDehumidifierState = 1;
+			this.RelativeHumidityHumidifierThreshold = this.deviceStatus.body.nebulizationEfficiency;
+
+			if (this.CurrentRelativeHumidity > this.RelativeHumidityHumidifierThreshold) {
+				this.CurrentHumidifierDehumidifierState = 1;
+			} else if (this.Active === 0) {
+				this.CurrentHumidifierDehumidifierState = 0;
+			} else {
 				this.CurrentHumidifierDehumidifierState = 2;
-				this.RelativeHumidityHumidifierThreshold = this.CurrentRelativeHumidity;
-				break;
-			default:
-				this.TargetHumidifierDehumidifierState = 1;
-				this.RelativeHumidityHumidifierThreshold = this.deviceStatus.body.nebulizationEfficiency;
-				if (this.CurrentRelativeHumidity > this.RelativeHumidityHumidifierThreshold) {
-					this.CurrentHumidifierDehumidifierState = 1;
-				} else if (this.Active === 0) {
-					this.CurrentHumidifierDehumidifierState = 0;
-				} else {
-					this.CurrentHumidifierDehumidifierState = 2;
-				}
+			}
 		}
+
 		this.platform.log.debug(
 			'Humidifier %s TargetHumidifierDehumidifierState -',
 			this.accessory.displayName,
 			'Device is Currently: ',
 			this.TargetHumidifierDehumidifierState,
 		);
+
 		this.platform.log.debug(
 			'Humidifier %s RelativeHumidityHumidifierThreshold -',
 			this.accessory.displayName,
 			'Device is Currently: ',
 			this.RelativeHumidityHumidifierThreshold,
 		);
+
 		this.platform.log.debug(
 			'Humidifier %s CurrentHumidifierDehumidifierState -',
 			this.accessory.displayName,
 			'Device is Currently: ',
 			this.CurrentHumidifierDehumidifierState,
 		);
-		// Lock Physical Controls
+		
 		if (this.deviceStatus.body.childLock) {
 			this.LockPhysicalControls = 1;
 		} else {
 			this.LockPhysicalControls = 0;
 		}
-		// Current Temperature
+		
 		this.CurrentTemperature = this.deviceStatus.body.temperature;
 	}
 
@@ -208,7 +196,6 @@ export class Humidifier {
 	 */
 	async refreshStatus() {
 		try {
-			// this.platform.log.error('Humidifier - Reading', `${DeviceURL}/${this.device.deviceID}/devices`);
 			const deviceStatus: deviceStatusResponse = (
 				await this.platform.axios.get(`${DeviceURL}/${this.device.deviceId}/status`)
 			).data;

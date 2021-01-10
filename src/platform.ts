@@ -22,12 +22,11 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 
 	constructor(public readonly log: Logger, public readonly config: SwitchBotPlatformConfig, public readonly api: API) {
 		this.log.debug('Finished initializing platform:', this.config.name);
-		// only load if configured
+		
 		if (!this.config) {
 			return;
 		}
 
-		// verify the config
 		try {
 			this.verifyConfig();
 			this.log.debug('Config OK');
@@ -37,7 +36,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 			return;
 		}
 
-		// setup axios interceptor to add headers / api key to each request
 		this.axios.interceptors.request.use((request: AxiosRequestConfig) => {
 			request.headers.Authorization = this.config.credentials?.openToken;
 			request.headers['Content-Type'] = 'application/json; charset=utf8';
@@ -50,7 +48,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 		// to start discovery of new accessories.
 		this.api.on('didFinishLaunching', async () => {
 			log.debug('Executed didFinishLaunching callback');
-			// run the method to discover / register your devices as accessories
 			try {
 				await this.discoverDevices();
 			} catch (e) {
@@ -66,8 +63,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 	 */
 	configureAccessory(accessory: PlatformAccessory) {
 		this.log.info('Loading accessory from cache:', accessory.displayName);
-
-		// add the restored accessory to the accessories cache so we can track if it has already been registered
 		this.accessories.push(accessory);
 	}
 
@@ -75,24 +70,14 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 	 * Verify the config passed to the plugin is valid
 	 */
 	verifyConfig() {
-		/**
-		 * Hidden Device Discovery Option
-		 * This will disable adding any device and will just output info.
-		 */
-		this.config.devicediscovery;
-
 		this.config.options = this.config.options || {};
 
-		if (this.config.options) {
-			this.config.options?.humidifier;
-		}
-
-		if (this.config.options!.ttl! < 120) {
+		if (this.config.options?.ttl! < 120) {
 			throw new Error('TTL must be above 120 (2 minutes).');
 		}
 
 		if (!this.config.options.ttl) {
-			this.config.options!.ttl! = 120;
+			this.config.options.ttl = 120;
 			this.log.warn('Using Default Refresh Rate.');
 		}
 
@@ -125,20 +110,22 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 			} else {
 				this.log.debug(JSON.stringify(deviceItem));
 			}
-			
-			this.log.info('Discovered %s %s', deviceItem.deviceName, deviceItem.deviceType);
-			
-			switch (deviceItem.deviceType) {
-				case 'Humidifier':
-				case 'Smart Fan':
-					this.createDevice('Humidifier', deviceItem, devices);
-					break;
-				default:
-					this.log.info(
-						`A SwitchBot Device has been discovered with Device Type: ${deviceItem.deviceType}, which is currently not supported.`,
-						'Submit Feature Requests Here: https://git.io/JL14Z,',
-					);
-			}
+
+			if (!this.config.hidden?.includes(deviceItem.deviceName)) {
+				this.log.info('Discovered %s %s', deviceItem.deviceName, deviceItem.deviceType);
+				
+				switch (deviceItem.deviceType) {
+					case 'Humidifier':
+					case 'Smart Fan':
+						this.createDevice('Humidifier', deviceItem, devices);
+						break;
+					default:
+						this.log.info(
+							`A SwitchBot Device has been discovered with Device Type: ${deviceItem.deviceType}, which is currently not supported.`,
+							'Submit Feature Requests Here: https://git.io/JL14Z,',
+						);
+				}
+			}	
 		}
 
 		for (const deviceVirtual of devices.body.infraredRemoteList) {
@@ -148,26 +135,28 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 				this.log.debug(JSON.stringify(deviceVirtual));
 			}
 
-			this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.remoteType);
-
-			switch (deviceVirtual.remoteType) {
-				case 'DIY Air Conditioner':
-				case 'Air Conditioner':
-					this.createDeviceIR('AirConditioner', deviceVirtual, devices);
-					break;
-				case 'Fan':
-				case 'DIY Fan':
-					this.createDeviceIR('Fan', deviceVirtual, devices);
-					break;
-				case 'Speaker':
-				case 'DIY Speaker':
-					this.createDeviceIR('Speaker', deviceVirtual, devices);
-					break;
-				default: 
-					this.log.info(
-						`A SwitchBot Device has been discovered with Device Type: ${deviceVirtual.remoteType}, which is currently not supported.`,
-						'Submit Feature Requests Here: https://git.io/JL14Z,',
-					);
+			if (!this.config.hidden?.includes(deviceVirtual.deviceName)) {
+				this.log.info('Discovered %s %s', deviceVirtual.deviceName, deviceVirtual.remoteType);
+	
+				switch (deviceVirtual.remoteType) {
+					case 'DIY Air Conditioner':
+					case 'Air Conditioner':
+						this.createDeviceIR('AirConditioner', deviceVirtual, devices);
+						break;
+					case 'Fan':
+					case 'DIY Fan':
+						this.createDeviceIR('Fan', deviceVirtual, devices);
+						break;
+					case 'Speaker':
+					case 'DIY Speaker':
+						this.createDeviceIR('Speaker', deviceVirtual, devices);
+						break;
+					default: 
+						this.log.info(
+							`A SwitchBot Device has been discovered with Device Type: ${deviceVirtual.remoteType}, which is currently not supported.`,
+							'Submit Feature Requests Here: https://git.io/JL14Z,',
+						);
+				}
 			}
 		}
 	}
@@ -278,7 +267,6 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 	}
 
 	public unregisterPlatformAccessories(existingAccessory: PlatformAccessory) {
-		// remove platform accessories when no longer present
 		this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
 		this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
 	}

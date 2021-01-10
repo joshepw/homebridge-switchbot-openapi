@@ -1,52 +1,36 @@
-import { Service, PlatformAccessory } from 'homebridge';
+import { BaseDevice } from './BaseDevice';
+import { PlatformAccessory } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
-import { DeviceURL } from '../settings';
-import { irdevices as deviceTypeIR, SwitchBotPlatformConfig } from '../configTypes';
+import { irdevices as deviceTypeIR } from '../configTypes';
 
-export class Fan {
-	private service: Service;
-
-	private powerState: boolean;
+export class Fan extends BaseDevice {
 	private currentRotateState: number;
-	private isBusy: boolean;
 
 	constructor(
-		private readonly platform: SwitchBotPlatform,
-		private accessory: PlatformAccessory,
+		protected readonly platform: SwitchBotPlatform,
+		protected accessory: PlatformAccessory,
 		public device: deviceTypeIR,
 	) {
+		super(platform, accessory, device, platform.Service.Fanv2);
+
 		this.powerState = false;
-		this.isBusy = false;
 		this.currentRotateState = this.platform.Characteristic.SwingMode.SWING_DISABLED;
 
-		this.service = this.accessory.getService(this.platform.Service.Fanv2) || this.accessory.addService(this.platform.Service.Fanv2);
-
-		this.service.setCharacteristic(
-			this.platform.Characteristic.Name,
-			`${this.device.deviceName} ${this.device.remoteType}`,
-		);
-
 		this.service.getCharacteristic(this.platform.Characteristic.Active)
-			.on('get', this.handleActiveGet.bind(this))
-			.on('set', this.handleActiveSet.bind(this));
+			.on('get', this.handleOnGet.bind(this))
+			.on('set', this.handleOnSet.bind(this));
 
 		this.service.getCharacteristic(this.platform.Characteristic.SwingMode)
 			.on('get', this.handleSwingModeGet.bind(this))
 			.on('set', this.handleSwingModeSet.bind(this));
 	}
 
-	/**
-   * Handle requests to get the current value of the "Active" characteristic
-   */
 	handleSwingModeGet(callback) {
 		this.platform.log.debug('Triggered GET Active');
 
 		callback(null, this.currentRotateState);
 	}
 
-	/**
-	 * Handle requests to set the "Active" characteristic
-	 */
 	async handleSwingModeSet(value, callback) {
 		this.platform.log.debug('Triggered SET Active:' + value);
 
@@ -57,61 +41,5 @@ export class Fan {
 		}
 
 		callback(null);
-	}
-
-	/**
-   * Handle requests to get the current value of the "Active" characteristic
-   */
-	handleActiveGet(callback) {
-		this.platform.log.debug('Triggered GET Active');
-
-		callback(null, this.powerState ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE);
-	}
-
-	/**
-	 * Handle requests to set the "Active" characteristic
-	 */
-	async handleActiveSet(value, callback) {
-		this.platform.log.debug('Triggered SET Active:' + value);
-
-		try {
-			if (value === this.platform.Characteristic.Active.ACTIVE) {
-				await this.pushChanges('turnOn');
-			} else {
-				await this.pushChanges('turnOff');
-			}
-		} catch (error) {
-			this.platform.log.error(error);
-		}
-
-		callback(null);
-	}
-
-	async pushChanges(command: string, parameter: string = 'default') {
-		if (this.isBusy) {
-			return;
-		}
-
-		this.isBusy = true;
-
-		const payload = {
-			commandType: 'command',
-			command,
-			parameter,
-		} as any;
-
-		this.platform.log.info(
-			`Sending request to SwitchBot API.${this.device.deviceName} command:`,
-			`${payload.command}, parameter:`,
-			`${payload.parameter}, commandType:`,
-			`${payload.commandType}`,
-		);
-		this.platform.log.debug('Fan %s pushChanges -', this.accessory.displayName, JSON.stringify(payload));
-
-		// Make the API request
-		const push = await this.platform.axios.post(`${DeviceURL}/${this.device.deviceId}/commands`, payload);
-		this.platform.log.debug('Fan %s Changes pushed -', this.accessory.displayName, push.data);
-
-		this.isBusy = false;
 	}
 }
