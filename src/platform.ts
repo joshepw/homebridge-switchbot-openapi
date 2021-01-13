@@ -72,7 +72,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
 	verifyConfig() {
 		this.config.options = this.config.options || {};
 
-		if (this.config.options?.ttl! < 120) {
+		if (this.config.options?.ttl && this.config.options?.ttl < 120) {
 			throw new Error('TTL must be above 120 (2 minutes).');
 		}
 

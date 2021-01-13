@@ -1,5 +1,5 @@
 import { BaseDevice } from './BaseDevice';
-import { PlatformAccessory } from 'homebridge';
+import { PlatformAccessory, Service } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
 import { irdevices as deviceTypeIR } from '../configTypes';
 
@@ -28,35 +28,23 @@ export class AirConditioner extends BaseDevice {
 		this.currentTemperature = 26;
 		this.currentTempUnit = this.platform.Characteristic.TemperatureDisplayUnits.CELSIUS;
 
-		this.service.getCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState)
-			.on('get', this.handleCurrentHeatingCoolingStateGet.bind(this));
-
 		this.service.getCharacteristic(this.platform.Characteristic.TargetHeatingCoolingState)
-			.on('get', this.handleTargetHeatingCoolingStateGet.bind(this))
 			.on('set', this.handleTargetHeatingCoolingStateSet.bind(this));
 
 		this.service.getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-			.on('get', this.handleCurrentTemperatureGet.bind(this));
+			.setProps({
+				minValue: 0,
+				maxValue: 100,
+				minStep: 0.01
+			});
 
 		this.service.getCharacteristic(this.platform.Characteristic.TargetTemperature)
-			.on('get', this.handleTargetTemperatureGet.bind(this))
+			.setProps({
+				minValue: 16,
+				maxValue: 30,
+				minStep: 1
+			})
 			.on('set', this.handleTargetTemperatureSet.bind(this));
-
-		this.service.getCharacteristic(this.platform.Characteristic.TemperatureDisplayUnits)
-			.on('get', this.handleTemperatureDisplayUnitsGet.bind(this))
-			.on('set', this.handleTemperatureDisplayUnitsSet.bind(this));
-	}
-
-	handleCurrentHeatingCoolingStateGet(callback) {
-		this.platform.log.debug('Triggered GET CurrentHeatingCoolingState');
-
-		callback(null, this.currentMode);
-	}
-
-	handleTargetHeatingCoolingStateGet(callback) {
-		this.platform.log.info('Get TargetHeatingCoolingState');
-
-		callback(null, this.platform.Characteristic.TargetHeatingCoolingState.AUTO);
 	}
 
 	async handleTargetHeatingCoolingStateSet(value, callback) {
@@ -102,12 +90,6 @@ export class AirConditioner extends BaseDevice {
 		callback(null,this.getTemperatureValue(this.currentTemperature));
 	}
 
-	handleTargetTemperatureGet(callback) {
-		this.platform.log.debug(`Get Temperature: ${this.getTemperatureValue(this.currentTemperature)}˚C`);
-
-		callback(null, this.getTemperatureValue(this.currentTemperature));
-	}
-
 	async handleTargetTemperatureSet(value, callback) {
 		this.platform.log.debug(`Setting Temperature: ${this.getTemperatureValue(value)}˚C`);
 
@@ -124,16 +106,6 @@ export class AirConditioner extends BaseDevice {
 		callback(null);
 	}
 
-	handleTemperatureDisplayUnitsGet(callback) {
-		callback(null, this.currentTempUnit);
-	}
-
-	handleTemperatureDisplayUnitsSet(value, callback) {
-		this.platform.log.debug('Triggered SET TemperatureDisplayUnits:' + value);
-
-		callback(null);
-	}
-
 	getTemperatureValue(temp) {
 		if (this.currentTempUnit === this.platform.Characteristic.TemperatureDisplayUnits.FAHRENHEIT) {
 			return Math.round((temp - 32) * 5 / 9);
@@ -143,6 +115,6 @@ export class AirConditioner extends BaseDevice {
 	}
 
 	getCommandValuesForPush() {
-		return `${this.getTemperatureValue(this.currentTemperature)},${this.currentMode},1,${this.currentMode === this.platform.Characteristic.TargetHeatingCoolingState.OFF ? 'off' : 'on'}`;
+		return `${this.getTemperatureValue(this.currentTemperature)},${this.currentMode},1,${this.currentState === this.platform.Characteristic.TargetHeatingCoolingState.OFF ? 'off' : 'on'}`;
 	}
 }
