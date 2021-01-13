@@ -7,7 +7,6 @@ import { Meter } from './Devices/Meter';
 import { Curtain } from './Devices/Curtain';
 import { irdevices, device, SwitchBotPlatformConfig, deviceResponses, deviceStatusResponse } from './configTypes';
 
-
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
@@ -159,6 +158,12 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
             this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
             this.createHumidifier(device, devices);
             break;
+          case 'Hub Mini':
+            this.log.info('Discovered a %s', device.deviceType);
+            break;
+          case 'Hub Plus':
+            this.log.info('Discovered a %s', device.deviceType);
+            break;
           case 'Bot':
             this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
             this.createBot(device, devices);
@@ -171,9 +176,13 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
             this.log.info('Discovered %s %s', device.deviceName, device.deviceType);
             this.createCurtain(device, devices);
             break;
+          case 'Remote':
+            this.log.debug('Discovered %s, %s is Not Supported.', device.deviceName, device.deviceType);
+            break;
           default:
             this.log.info(
-              'A SwitchBot Device has been discovered with Device Type: %s, which is currently not supported.',
+              'Device: %s with Device Type: %s, is currently not supported.',
+              device.deviceName,
               device.deviceType,
               'Submit Feature Requests Here: https://git.io/JL14Z',
             );
@@ -292,7 +301,7 @@ export class SwitchBotPlatform implements DynamicPlatformPlugin {
       );
 
       if (!this.config.options?.bot?.device_press && !this.config.options?.bot?.device_switch) {
-        throw new Error('You must set your Bot to Press or Switch Mode');
+        this.log.error('You must set your Bot to Press or Switch Mode');
       }
       // create a new accessory
       const accessory = new this.api.platformAccessory(`${device.deviceName} ${device.deviceType}`, uuid);
