@@ -1,9 +1,9 @@
-import { Service, PlatformAccessory, CharacteristicEventTypes } from 'homebridge';
+import { Service, PlatformAccessory, CharacteristicEventTypes, CharacteristicSetCallback } from 'homebridge';
 import { SwitchBotPlatform } from '../platform';
 import { interval, Subject } from 'rxjs';
 import { debounceTime, skipWhile, tap } from 'rxjs/operators';
 import { DeviceURL } from '../settings';
-import { device, deviceStatusResponse } from '../configTypes';
+import { device } from '../configTypes';
 
 /**
  * Platform Accessory
@@ -15,7 +15,7 @@ export class Bot {
 
   On!: boolean;
   OutletInUse!: boolean;
-  deviceStatus!: deviceStatusResponse;
+  deviceStatus!: any;
 
   botUpdateInProgress!: boolean;
   doBotUpdate!: any;
@@ -27,14 +27,14 @@ export class Bot {
   ) {
     // default placeholders
     this.On = false;
-    this.OutletInUse = false;
+    this.OutletInUse = true;
 
     // this is subject we use to track when we need to POST changes to the SwitchBot API
     this.doBotUpdate = new Subject();
     this.botUpdateInProgress = false;
 
     // Retrieve initial values and updateHomekit
-    this.refreshStatus();
+    this.parseStatus();
 
     // set accessory information
     this.accessory
@@ -102,10 +102,9 @@ export class Bot {
    * Parse the device status from the SwitchBot api
    */
   parseStatus() {
-    if (this.deviceStatus.body.power === 'on') {
-      this.OutletInUse = true;
-    } else {
-      this.OutletInUse = false;
+    this.OutletInUse = true;
+    if (this.platform.config.options?.bot?.device_press?.includes(this.device.deviceId)){
+      this.On = false;
     }
     this.platform.log.debug(
       'Bot %s OutletInUse: %s On: %s',
@@ -121,20 +120,20 @@ export class Bot {
   async refreshStatus() {
     try {
       // this.platform.log.error('Bot - Reading', `${DeviceURL}/${this.device.deviceID}/devices`);
-      const deviceStatus: deviceStatusResponse = (
-        await this.platform.axios.get(`${DeviceURL}/${this.device.deviceId}/status`)
-      ).data;
-      if (deviceStatus.message === 'success') {
-        this.deviceStatus = deviceStatus;
-        this.platform.log.debug(
-          'Bot %s refreshStatus -',
-          this.accessory.displayName,
-          JSON.stringify(this.deviceStatus),
-        );
-
-        this.parseStatus();
-        this.updateHomeKitCharacteristics();
-      }
+      const deviceStatus: any = {
+        statusCode:100,
+        body: {
+          deviceId: this.device.deviceId,
+          deviceType: this.device.deviceType,
+          hubDeviceId: this.device.hubDeviceId,
+          power: 'on',
+        },
+        message: 'success',
+      };
+      this.deviceStatus = deviceStatus;
+      this.parseStatus();
+      this.updateHomeKitCharacteristics();
+      
     } catch (e) {
       this.platform.log.error(
         `Bot - Failed to update status of ${this.device.deviceName}`,
@@ -209,7 +208,7 @@ export class Bot {
   /**
    * Handle requests to set the "On" characteristic
    */
-  handleOnSet(value, callback) {
+  handleOnSet(value: any, callback: CharacteristicSetCallback) {
     this.platform.log.debug('Bot %s -', this.accessory.displayName, `Set On: ${value}`);
     this.doBotUpdate.next();
     this.On = value;
